@@ -1,6 +1,5 @@
 asgiref==3.8.1
 Django==4.2.13
-django-sslserver==0.22
 gunicorn==22.0.0
 packaging==24.0
 psycopg2==2.9.9
