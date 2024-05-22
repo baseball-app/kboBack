@@ -3,4 +3,3 @@ Django==4.2.13
 psycopg2==2.9.9
 sqlparse==0.5.0
 toml==0.10.2
-typing_extensions==4.11.0
