@@ -1,2 +1,5 @@
 config.toml
 vven/**/*
+Pipfile
+*.pyc
+
