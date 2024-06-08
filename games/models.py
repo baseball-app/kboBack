@@ -4,7 +4,7 @@ from django.db import models
 
 class Team(models.Model):
     name = models.CharField(max_length=30)
-    logo =  models.ImageField(upload_to='images/')
+    logo = models.ImageField(upload_to='images/')
 
 class Ballpark(models.Model):
     name = models.CharField(max_length=50)

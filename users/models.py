@@ -3,17 +3,47 @@ from django.db import models
 # Create your models here.
 from django.db import models
 
-class User(models.Model):
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.db import models
+from games.models import Team
+
+class UserManager(BaseUserManager):
+    def create_user(self, username, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(username, email, password, **extra_fields)
+
+class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=255, unique=True)
     nickname = models.CharField(max_length=255)
-    favorite_team = models.IntegerField()
+    favorite_team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True)
     email = models.EmailField(max_length=255, unique=True)
-    password = models.CharField(max_length=255)
     profile_image = models.ImageField(upload_to='profile_images/')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
 
-    # 모델 관리자
+    objects = UserManager()
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
+
     def __str__(self):
         return self.username
 
@@ -21,3 +51,9 @@ class Friendship(models.Model):
     user1 = models.ForeignKey('User', related_name='friendships_initiated', on_delete=models.CASCADE)
     user2 = models.ForeignKey('User', related_name='friendships_received', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user1', 'user2')
+
+    def __str__(self):
+        return f"{self.user1} and {self.user2} are friends"

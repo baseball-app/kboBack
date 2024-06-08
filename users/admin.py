@@ -4,7 +4,7 @@ from . import models
 # Register your models here.
 
 @admin.register(models.User)
-class CustomUser(admin.ModelAdmin):
+class User(admin.ModelAdmin):
     pass
 
 @admin.register(models.Friendship)
