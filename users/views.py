@@ -34,4 +34,6 @@ class SignUpApi(APIView):
         )
         return Response({
             'status': 'success',
+            'email' : data.get('email'),
+            'nickname' : data.get('nickname'),
         },status = status.HTTP_201_CREATED)
