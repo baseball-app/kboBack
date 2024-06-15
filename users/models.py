@@ -24,8 +24,8 @@ class UserManager(BaseUserManager):
         return self.create_user(nickname, email, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
-    nickname = models.CharField(max_length=255, unique=True)
-    favorite_team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True)
+    nickname = models.CharField(max_length=255)
+    my_team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True)
     email = models.EmailField(max_length=255, unique=True)
     profile_image = models.ImageField(upload_to='profile_images/')
     created_at = models.DateTimeField(auto_now_add=True)
