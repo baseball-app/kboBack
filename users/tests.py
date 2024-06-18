@@ -4,7 +4,9 @@ from rest_framework.test import APITestCase, APIClient
 from django.urls import reverse
 
 
-from users.models import User, Team
+from users.models import User
+from games.models import Team
+
 
 User = get_user_model()
 
