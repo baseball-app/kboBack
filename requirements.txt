@@ -9,3 +9,4 @@ toml==0.10.2
 typing_extensions==4.11.0
 Pillow == 10.3.0
 djangorestframework==3.12.2
+djangorestframework-simplejwt==5.1.0
