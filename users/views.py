@@ -13,17 +13,17 @@ from games.models import Team
 from users.services import UserService
 
 
-class SignUpApi(APIView):
+class UserSignUpApi(APIView):
     permission_classes = (AllowAny, )
 
-    class SignUpInputSerializer(serializers.Serializer):
+    class UserSignUpInputSerializer(serializers.Serializer):
         email = serializers.EmailField()
         password = serializers.CharField()
         nickname = serializers.CharField()
         my_team = serializers.CharField()
 
     def post(self, request):
-        serializer = self.SignUpInputSerializer(data = request.data)
+        serializer = self.UserSignUpInputSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         user_service = UserService()
@@ -85,3 +85,36 @@ class ChangePasswordView(APIView):
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
+
+class UserLoginApi(APIView):
+    permission_classes = (AllowAny, )
+
+    class UserLoginInputSerializer(serializers.Serializer):
+        email = serializers.EmailField()
+        password = serializers.CharField()
+
+    class UserLoginOutputSerializer(serializers.Serializer):
+        email = serializers.CharField()
+        refresh = serializers.CharField()
+        access = serializers.CharField()
+        nickname = serializers.CharField()
+    
+    def post(self, request):
+        serializers = self.UserLoginInputSerializer(data = request.data)
+        serializers.is_valid(raise_exception=True)
+        data = serializers.validated_data
+        
+        service = UserService()
+        
+        login_data = service.login(
+            email = data.get('email'),
+            password = data.get('password'),
+        )
+
+        output_serializer = self.UserLoginOutputSerializer(data = login_data)
+        output_serializer.is_valid(raise_exception=True)
+
+        return Response({
+            'status': 'success',
+            'data': output_serializer.data,
+        }, status = status.HTTP_200_OK)
