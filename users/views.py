@@ -95,9 +95,11 @@ class UserLoginApi(APIView):
 
     class UserLoginOutputSerializer(serializers.Serializer):
         email = serializers.CharField()
+        nickname = serializers.CharField()
+        myteam = serializers.CharField()
         refresh = serializers.CharField()
         access = serializers.CharField()
-        nickname = serializers.CharField()
+        datetime = serializers.DateTimeField()
     
     def post(self, request):
         serializers = self.UserLoginInputSerializer(data = request.data)
