@@ -3,6 +3,7 @@ from games.models import Team
 from users.selectors import UserSelector
 from rest_framework import exceptions
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from django.utils import timezone
 
 class UserService:
     def __init__(self):
@@ -32,9 +33,10 @@ class UserService:
 
         data = {
             'email': user.email,
+            'nickname': user.nickname,
+            'myteam': str(user.my_team),
             'refresh': str(token),
             'access': str(token.access_token),
-            'nickname': user.nickname,
+            'datetime': timezone.now()
         }
-
         return data
