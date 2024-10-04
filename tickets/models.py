@@ -12,7 +12,17 @@ class Ticket(models.Model):
         {RESULT3, "무승부"},
         {RESULT4, "취소"},
     )
-    
+    WEATHER1 = "맑음"
+    WEATHER2 = "흐림"
+    WEATHER3 = "비"
+    WEATHER4 = "바람"
+    WEATHER_CHOICES = (
+        (WEATHER1, "맑음"),
+        (WEATHER2, "흐림"),
+        (WEATHER3, "비"),
+        (WEATHER4, "바람"),
+    )
+
 
     user_id = models.ForeignKey('users.User', on_delete=models.CASCADE)
     date = models.DateField()
