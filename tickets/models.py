@@ -24,7 +24,7 @@ class Ticket(models.Model):
     )
 
 
-    user_id = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    writer = models.ForeignKey('users.User', on_delete=models.CASCADE)
     date = models.DateField()
     game = models.ForeignKey('games.Game',on_delete=models.CASCADE, default=1)
     result = models.IntegerField(default=0)
