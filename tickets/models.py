@@ -19,8 +19,8 @@ class Ticket(models.Model):
     WEATHER_CHOICES = (
         (WEATHER1, "맑음"),
         (WEATHER2, "흐림"),
-        (WEATHER3, "무승부"),
-        (WEATHER4, "취소"),
+        (WEATHER3, "비"),
+        (WEATHER4, "바람"),
     )
 
 
