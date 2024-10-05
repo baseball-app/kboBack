@@ -17,8 +17,8 @@ class TicketCreateApi(APIView):
     class TicketCreateInputSerializer(serializers.Serializer):
         date = serializers.DateField()
         game = serializers.IntegerField()
-        result = serializers.IntegerField()
-        weather = serializers.IntegerField()
+        result = serializers.CharField()
+        weather = serializers.CharField()
         is_ballpark = serializers.BooleanField()
         score_our = serializers.IntegerField()
         score_opponent = serializers.IntegerField()
