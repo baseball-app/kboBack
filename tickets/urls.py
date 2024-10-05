@@ -1,7 +1,7 @@
 from django.urls import path
-# from .views import
+from .views import TicketCreateApi
 app_name = "tickets"
 
 urlpatterns=[
-    # path('signup/', UserSignUpApi.as_view(), name = "user_signup"),
+    path('create/', TicketCreateApi.as_view(), name = "ticket_create"),
 ]
