@@ -28,7 +28,6 @@ class TicketCoordinatorService:
                memo:str) -> Ticket:
         
         game = Game.objects.get(id=game_id)
-        print(game.ballpark)
 
         writer_team = writer.my_team
         if(game.team_away == writer_team):
@@ -39,7 +38,6 @@ class TicketCoordinatorService:
             is_homeballpark = True
             
         ballpark = game.ballpark
-        print(game.team_away)
 
         service = TicketService()
         ticket = service.create(
