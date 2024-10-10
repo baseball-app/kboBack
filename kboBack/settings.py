@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'tickets',
     "games.apps.GamesConfig",
-    'alerts.apps.AlertsConfig'
+    "notifications.apps.NotificationsConfig"
 ]
 
 MIDDLEWARE = [
