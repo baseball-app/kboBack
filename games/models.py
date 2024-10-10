@@ -12,7 +12,7 @@ class Ballpark(models.Model):
 
 class Game(models.Model):
     date = models.DateField()
-    team_home = models.ManyToManyField("games.Team", related_name ='home_games', blank=False)
-    team_away = models.ManyToManyField("games.Team", related_name ='away_games', blank=False)
-    ballpark = models.ManyToManyField("games.Ballpark", related_name="games", blank=False)
+    team_home = models.ForeignKey("games.Team", on_delete=models.CASCADE, related_name='home_games')
+    team_away = models.ForeignKey('games.Team',on_delete=models.CASCADE, related_name = 'away_games')
+    ballpark = models.ForeignKey("games.Ballpark", on_delete=models.CASCADE, related_name="games")
     time = models.TimeField()
