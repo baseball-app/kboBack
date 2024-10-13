@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: kboback
+      POSTGRES_USER: kboback_user
+      POSTGRES_PASSWORD: kboback_password
+    ports:
+      - "5432:5432"
+    networks:
+      default_bridge:
+        ipv4_address: 172.30.0.100
+
+  api:
+    build: ./backend
+    command: bash -c "
+      python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py runscript init_script &&
+      gunicorn conf.wsgi:application -b 0:8000"
+    volumes:
+      - ./backend/:/backend/
+    expose:
+      - 8000
+    env_file:
+      - ./backend/.env
+    environment:
+      - DB_HOST=172.30.0.100
+    networks:
+      default_bridge:
+        ipv4_address: 172.30.0.111
+    depends_on:
+      - db
+
+  nginx:
+    build: ./nginx
+    ports:
+      - 8000:8000
+    networks:
+      default_bridge:
+        ipv4_address: 172.30.0.123
+    depends_on:
+      - api
+
+networks:
+  default_bridge:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.0.0/16
