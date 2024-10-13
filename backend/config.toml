@@ -1,0 +1,6 @@
+[database]
+name = "kboback"
+user = "kboback_user"
+password = "kboback_password"
+host = "127.0.0.1"
+port = "5432"
