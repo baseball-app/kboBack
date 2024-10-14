@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_extensions',
+    'drf_spectacular',
     'apps.users',
     'apps.tickets',
     'apps.games',
@@ -39,13 +41,24 @@ MIDDLEWARE = [
     'conf.middleware.LoggingMiddleware'
 ]
 
-ROOT_URLCONF = 'conf.urls'
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -57,6 +70,18 @@ TEMPLATES = [
         },
     },
 ]
+
+SITE_NAME = "KBO Backend"
+SPECTACULAR_SETTINGS = {
+    "TITLE": f"{SITE_NAME} API",
+    "DESCRIPTION": f"{SITE_NAME}의 API입니다.",
+    "SECURITY": [{"Bearer": []}],
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SERVE_AUTHENTICATION": [],
+}
+
+ROOT_URLCONF = 'conf.urls'
 
 WSGI_APPLICATION = 'conf.wsgi.application'
 
@@ -125,13 +150,4 @@ LOGGING = {
             'propagate': True,
         },
     },
-}
-
-REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated", ],
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
-    ],
 }
