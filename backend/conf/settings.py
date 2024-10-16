@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'oauth2_provider',
     'django_extensions',
     'drf_spectacular',
     'apps.users',
@@ -38,7 +39,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'conf.middleware.LoggingMiddleware'
 ]
 
 REST_FRAMEWORK = {
@@ -53,6 +53,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+OAUTH2_PROVIDER = {
+    'SCOPES': {'read': 'Read scope', 'write': 'Write scope'},
 }
 
 TEMPLATES = [
@@ -75,6 +79,15 @@ SITE_NAME = "KBO Backend"
 SPECTACULAR_SETTINGS = {
     "TITLE": f"{SITE_NAME} API",
     "DESCRIPTION": f"{SITE_NAME}의 API입니다.",
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "Bearer": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+            }
+        }
+    },
     "SECURITY": [{"Bearer": []}],
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
@@ -97,15 +110,6 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = 'users.User'
-
-REST_USE_JWT = True
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=28),
-    'ROTATE_REFRESH_TOKENS': False,  # true면 토큰 갱신 시 refresh도 같이 갱신
-    'BLACKLIST_AFTER_ROTATION': True,
-}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
