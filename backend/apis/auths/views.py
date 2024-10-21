@@ -3,8 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import GenericViewSet
 
-from apis.auths.serializers import NaverInputSerializer
-from apis.auths.services import NaverAuthService
+from apis.auths.serializers import NaverInputSerializer, KakaoInputSerializer
+from apis.auths.services import NaverAuthService, KakaoAuthService
 from apis.auths.swagger import SWAGGER_AUTHS_NAVER, SWAGGER_AUTHS_KAKAO
 
 
@@ -24,4 +24,17 @@ class AuthsViewSet(
         auth_service = NaverAuthService()
         user = auth_service.get_social_user(data=data)
 
+        # token 정보를 내려주도록 수정 필요
+        return user
+
+    @action(methods=["POST"], detail=False, permission_classes=[AllowAny])
+    def kakao(self, request):
+        serializer = KakaoInputSerializer(request)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        auth_service = KakaoAuthService()
+        user = auth_service.get_social_user(data=data)
+
+        # token 정보를 내려주도록 수정 필요
         return user
