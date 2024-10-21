@@ -111,6 +111,17 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'users.User'
 
+SOCIAL_LOGIN = {
+    'NAVER': {
+        'CLIENT_ID': '',
+        'CLIENT_SECRET': ''
+    },
+    'KAKAO': {
+        'CLIENT_ID': '',
+        'CLIENT_SECRET': ''
+    },
+}
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
