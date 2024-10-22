@@ -1,6 +1,7 @@
 from drf_spectacular.utils import extend_schema_view
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from apis.auths.serializers import NaverInputSerializer, KakaoInputSerializer
@@ -25,7 +26,7 @@ class AuthsViewSet(
         user = auth_service.get_social_user(data=data)
 
         # token 정보를 내려주도록 수정 필요
-        return user
+        return Response()
 
     @action(methods=["POST"], detail=False, permission_classes=[AllowAny])
     def kakao(self, request):
@@ -37,4 +38,4 @@ class AuthsViewSet(
         user = auth_service.get_social_user(data=data)
 
         # token 정보를 내려주도록 수정 필요
-        return user
+        return Response()

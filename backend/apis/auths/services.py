@@ -1,6 +1,6 @@
 import requests
-from django.contrib.auth.models import User
-
+from apps.auths.models import SocialInfo
+from apps.users.models import User
 from conf import settings
 
 
@@ -63,7 +63,8 @@ class KakaoAuthService(AuthService):
         if not user_info:
             return None
 
-        user = User.objects.filter(social_id=user_info['id']).last()
+        social = SocialInfo.objects.filter(social_id=user_info['id']).last()
+        user = User.objects.filter(id=social.user_id).last()
         if not user:
             return None
 
@@ -71,9 +72,10 @@ class KakaoAuthService(AuthService):
 
     def _get_access_token(self, data):
         grant_type = 'authorization_code'
-        redirect_uri = 'localhost:8000'
+        redirect_uri = 'http://localhost:8000/auths/kakao'
         client_id = settings.SOCIAL_LOGIN.get('KAKAO').get('CLIENT_ID')
         client_secret = settings.SOCIAL_LOGIN.get('KAKAO').get('CLIENT_SECRET')
+        code = data.get('code')
         response = requests.get(
             f'https://kauth.kakao.com/oauth/token?grant_type={grant_type}&code={code}&redirect_uri={redirect_uri}'
             f'&client_id={client_id}&client_secret={client_secret}',
@@ -92,5 +94,4 @@ class KakaoAuthService(AuthService):
                 'Authorization': f'Bearer {access_token}'
             },
         ).json()
-        message = response.get('message', 'failed')
-        return response['response'] if message == 'success' else None
+        return response if response['id'] else None
