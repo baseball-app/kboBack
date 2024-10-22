@@ -17,7 +17,7 @@ class AuthsViewSet(
 ):
     @action(methods=["POST"], detail=False, permission_classes=[AllowAny])
     def naver(self, request):
-        serializer = NaverInputSerializer(request)
+        serializer = NaverInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
@@ -29,7 +29,7 @@ class AuthsViewSet(
 
     @action(methods=["POST"], detail=False, permission_classes=[AllowAny])
     def kakao(self, request):
-        serializer = KakaoInputSerializer(request)
+        serializer = KakaoInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 

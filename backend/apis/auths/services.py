@@ -31,10 +31,12 @@ class NaverAuthService(AuthService):
 
         return user
 
-    def _get_access_token(self, code: str, state: str):
+    def _get_access_token(self, data):
         grant_type = 'authorization_code'
         client_id = settings.SOCIAL_LOGIN.get('NAVER').get('CLIENT_ID')
         client_secret = settings.SOCIAL_LOGIN.get('NAVER').get('CLIENT_SECRET')
+        code = data.get('code')
+        state = data.get('state')
         response = requests.get(
             f'https://nid.naver.com/oauth2.0/token?grant_type={grant_type}&code={code}&state={state}'
             f'&client_id={client_id}&client_secret={client_secret}'
@@ -67,7 +69,7 @@ class KakaoAuthService(AuthService):
 
         return user
 
-    def _get_access_token(self, code: str, state: str):
+    def _get_access_token(self, data):
         grant_type = 'authorization_code'
         redirect_uri = 'localhost:8000'
         client_id = settings.SOCIAL_LOGIN.get('KAKAO').get('CLIENT_ID')
