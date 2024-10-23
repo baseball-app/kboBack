@@ -1,12 +1,10 @@
-from datetime import timedelta
 from pathlib import Path
 
 import toml
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-with open('config.toml') as f:
-    config = toml.load(f)
+config = toml.load(BASE_DIR / 'config.toml')
 
 SECRET_KEY = 'django-insecure-xxqdx#pr_z5y0730591#2$4#ka-cp1%z75+7b6=x*fc@(@c7^j'
 
@@ -28,7 +26,8 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.tickets',
     'apps.games',
-    'apps.alerts'
+    'apps.alerts',
+    'apps.auths'
 ]
 
 MIDDLEWARE = [
@@ -110,6 +109,17 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = 'users.User'
+
+SOCIAL_LOGIN = {
+    'NAVER': {
+        'CLIENT_ID': config["api_keys"]["naver"]["client_id"],
+        'CLIENT_SECRET': config["api_keys"]["naver"]["client_secret"],
+    },
+    'KAKAO': {
+        'CLIENT_ID': config["api_keys"]["kakao"]["client_id"],
+        'CLIENT_SECRET': config["api_keys"]["kakao"]["client_secret"],
+    },
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {

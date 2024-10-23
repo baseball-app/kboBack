@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
-from apps.games.models import Team
+from base.models import TimeStampModel
 
 
 class UserManager(BaseUserManager):
@@ -26,13 +26,10 @@ class UserManager(BaseUserManager):
         return self.create_user(nickname, email, password, **extra_fields)
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin, TimeStampModel):
     nickname = models.CharField(max_length=255)
-    my_team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True)
     email = models.EmailField(max_length=255, unique=True)
     profile_image = models.ImageField(upload_to='profile_images/')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 

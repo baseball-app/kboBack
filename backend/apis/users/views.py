@@ -16,8 +16,7 @@ from apis.users.swagger import SWAGGER_USERS_SIGN_UP, SWAGGER_USERS_ME
 class UsersViewSet(
     GenericViewSet
 ):
-
-    @action(detail=False, url_path='sign-up', methods=["POST"], permission_classes=[AllowAny])
+    @action(methods=["POST"], detail=False, url_path='sign-up', permission_classes=[AllowAny])
     def sign_up(self, request):
         serializer = UserSerializer(request.user)
         serializer.is_valid(raise_exception=True)

@@ -4,3 +4,12 @@ user = "kboback_user"
 password = "kboback_password"
 host = "127.0.0.1"
 port = "5432"
+
+[api_keys]
+[api_keys.kakao]
+client_id = "kakao_client_id"
+client_secret = "kakao_secret"
+
+[api_keys.naver]
+client_id = "naver_client_id"
+client_secret = "naver_secret"
