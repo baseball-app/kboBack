@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from apis.users.serializers import UserSerializer
-from apis.users.swagger import SWAGGER_USERS_SIGN_UP, SWAGGER_USERS_ME
+from .serializers import UserSerializer
+from .swagger import SWAGGER_USERS_SIGN_UP, SWAGGER_USERS_ME
 
 
 @extend_schema_view(

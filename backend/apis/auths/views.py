@@ -4,9 +4,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from apis.auths.serializers import NaverInputSerializer, KakaoInputSerializer
-from apis.auths.services import NaverAuthService, KakaoAuthService
-from apis.auths.swagger import SWAGGER_AUTHS_NAVER, SWAGGER_AUTHS_KAKAO
+from .serializers import NaverInputSerializer, KakaoInputSerializer
+from .services import NaverAuthService, KakaoAuthService
+from .swagger import SWAGGER_AUTHS_NAVER, SWAGGER_AUTHS_KAKAO
 
 
 @extend_schema_view(

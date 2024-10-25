@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 SWAGGER_USERS_TAGS = ["USERS"]
 
