@@ -4,8 +4,8 @@ from rest_framework import routers
 from apis.auths.views import AuthsViewSet
 
 router = routers.DefaultRouter()
-router.register('', AuthsViewSet, basename="auths")
+router.register("", AuthsViewSet, basename="auths")
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]

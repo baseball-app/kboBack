@@ -1,1 +1,1 @@
-default_app_config = 'apps.games.config.GamesConfig'
+default_app_config = "apps.games.config.GamesConfig"

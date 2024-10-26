@@ -1,5 +1,6 @@
 [tool.ruff]
-select = ["E", "F", "W", "C", "D"]
+line-length = 120
+select = ["E", "F", "W", "C"]
 ignore = [
     "E402",
     "F841",

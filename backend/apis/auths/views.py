@@ -13,9 +13,7 @@ from apis.auths.swagger import SWAGGER_AUTHS_NAVER, SWAGGER_AUTHS_KAKAO
     naver=SWAGGER_AUTHS_NAVER,
     kakao=SWAGGER_AUTHS_KAKAO,
 )
-class AuthsViewSet(
-    GenericViewSet
-):
+class AuthsViewSet(GenericViewSet):
     @action(methods=["POST"], detail=False, permission_classes=[AllowAny])
     def naver(self, request):
         serializer = NaverInputSerializer(data=request.data)

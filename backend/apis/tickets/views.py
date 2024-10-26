@@ -1,4 +1,9 @@
-from rest_framework.mixins import ListModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin
+from rest_framework.mixins import (
+    ListModelMixin,
+    CreateModelMixin,
+    UpdateModelMixin,
+    DestroyModelMixin,
+)
 from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import GenericViewSet
 
@@ -8,6 +13,8 @@ class TicketsViewSet(
     CreateModelMixin,
     UpdateModelMixin,
     DestroyModelMixin,
-    GenericViewSet
+    GenericViewSet,
 ):
-    permission_classes = [AllowAny, ]
+    permission_classes = [
+        AllowAny,
+    ]
