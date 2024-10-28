@@ -2,33 +2,40 @@ from pathlib import Path
 
 import toml
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 config = toml.load(BASE_DIR / "config.toml")
 
-SECRET_KEY = "django-insecure-xxqdx#pr_z5y0730591#2$4#ka-cp1%z75+7b6=x*fc@(@c7^j"
-
-DEBUG = True
+SECRET_KEY = config["django"]["secret_key"]
 
 ALLOWED_HOSTS = ["*"]
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rest_framework",
-    "oauth2_provider",
-    "django_extensions",
-    "drf_spectacular",
+]
+
+PROJECT_APPS = [
     "apps.users",
     "apps.tickets",
     "apps.games",
     "apps.alerts",
     "apps.auths",
 ]
+
+THIRD_PARTY_APPS = [
+    "rest_framework",
+    "oauth2_provider",
+    "django_extensions",
+    "drf_spectacular",
+]
+
+INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
