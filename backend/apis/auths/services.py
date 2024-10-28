@@ -1,4 +1,5 @@
 import requests
+
 from apps.auths.models import SocialInfo
 from apps.users.models import User
 from conf import settings
