@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
+
 import os
 import sys
 import logging
@@ -7,7 +8,7 @@ import logging
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'conf.settings')
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "conf.settings")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -19,11 +20,11 @@ def main():
     logging.basicConfig(
         stream=sys.stdout,
         level=logging.DEBUG,
-        format='%(asctime)s %(levelname)s %(message)s',
+        format="%(asctime)s %(levelname)s %(message)s",
     )
 
     execute_from_command_line(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -1,4 +1,3 @@
-*.toml
 .github
 .idea/
 *.log
