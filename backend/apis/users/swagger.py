@@ -18,16 +18,6 @@ QUERY_PARAMETER_PASSWORD = OpenApiParameter(
     required=False,
 )
 
-SWAGGER_USERS_SIGN_UP = extend_schema(
-    tags=SWAGGER_USERS_TAGS,
-    summary="회원 가입",
-    description="회원에 가입합니다.",
-    parameters=[
-        QUERY_PARAMETER_EMAIL,
-        QUERY_PARAMETER_PASSWORD
-    ],
-)
-
 SWAGGER_USERS_ME = extend_schema(
     tags=SWAGGER_USERS_TAGS,
     summary="내 정보 확인",

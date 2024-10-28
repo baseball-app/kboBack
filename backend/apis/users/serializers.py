@@ -13,7 +13,7 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['password', 'email', 'nickname', 'my_team', 'profile_image']
+        fields = ["password", "email", "nickname", "my_team", "profile_image"]
 
     def get_my_team(self, obj):
         return obj

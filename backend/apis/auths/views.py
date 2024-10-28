@@ -21,10 +21,7 @@ User = get_user_model()
     naver=SWAGGER_AUTHS_NAVER,
     kakao=SWAGGER_AUTHS_KAKAO,
 )
-class AuthsViewSet(
-    GenericViewSet
-):
-
+class AuthsViewSet(GenericViewSet):
     @action(methods=["POST"], url_path='token-test', detail=False, permission_classes=[AllowAny])
     def token_test(self, request):
         user = User.objects.filter(id=int(request.data.get('user_id'))).first()
