@@ -3,7 +3,6 @@ from random import SystemRandom
 
 from django.utils import timezone
 from oauth2_provider.models import Application, AccessToken, RefreshToken
-from oauth2_provider.settings import oauth2_settings
 
 from conf import settings
 
@@ -38,15 +37,13 @@ def issue_tokens(user):
         access_token=access_token
     )
 
-    token = {
+    return {
         'access_token': access_token.token,
         'refresh_token': refresh_token.token,
         'scope': scope,
         'expires_in': expires_in,
         'token_type': token_type,
     }
-
-    return token
 
 
 def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):

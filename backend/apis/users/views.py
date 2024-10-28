@@ -16,18 +16,6 @@ from .swagger import SWAGGER_USERS_SIGN_UP, SWAGGER_USERS_ME
 class UsersViewSet(
     GenericViewSet
 ):
-    @action(methods=["POST"], detail=False, url_path='sign-up', permission_classes=[AllowAny])
-    def sign_up(self, request):
-        serializer = UserSerializer(request.user)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-        return Response(
-            status=status.HTTP_201_CREATED,
-            data={
-                'email': data.get('email'),
-                'nickname': data.get('nickname')
-            },
-        )
 
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
     def me(self, request):
