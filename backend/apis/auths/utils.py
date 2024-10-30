@@ -1,10 +1,9 @@
 from datetime import timedelta
 from random import SystemRandom
 
+from django.conf import settings
 from django.utils import timezone
 from oauth2_provider.models import Application, AccessToken, RefreshToken
-
-from conf import settings
 
 UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
                                'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -44,6 +43,22 @@ def issue_tokens(user):
         'expires_in': expires_in,
         'token_type': token_type,
     }
+
+
+def revoke_tokens(user):
+    # 엑세스 토큰 삭제
+    AccessToken.objects.filter(user=user).delete()
+
+    # 리프레시 토큰 삭제
+    RefreshToken.objects.filter(user=user).delete()
+
+
+def reissue_tokens(user, refresh_token):
+    if not RefreshToken.objects.filter(user=user, token=refresh_token):
+        return None
+
+    revoke_tokens(user)
+    return issue_tokens(user)
 
 
 def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):

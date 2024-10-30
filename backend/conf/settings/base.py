@@ -52,8 +52,8 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "base.authentication.CustomHeaderAuthentication",
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
-        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
@@ -62,7 +62,7 @@ REST_FRAMEWORK = {
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
-SESSION_COOKIE_AGE = 1209600
+CUSTOM_HEADER_NAME = 'HTTP_X_KBOAPP_TOKEN'
 
 OAUTH2_PROVIDER = {
     "SCOPES": {"read": "Read scope", "write": "Write scope"},

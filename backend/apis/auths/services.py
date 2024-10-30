@@ -2,7 +2,7 @@ import requests
 
 from apps.auths.models import SocialInfo
 from apps.users.models import User
-from conf import settings
+from django.conf import settings
 
 
 class AuthService:
@@ -26,7 +26,11 @@ class NaverAuthService(AuthService):
         if not user_info:
             return None
 
-        user = User.objects.filter(social_id=user_info["id"]).last()
+        social = SocialInfo.objects.filter(social_id=user_info["id"]).last()
+        if not social:
+            return None
+
+        user = User.objects.filter(social_id=social.user_id).last()
         if not user:
             return None
 
@@ -64,7 +68,21 @@ class KakaoAuthService(AuthService):
         if not user_info:
             return None
 
+        return user_info
+
+    def get_user(self, data):
+        access_token = self._get_access_token(data)
+        if not access_token:
+            return None
+
+        user_info = self._get_user_info(access_token)
+        if not user_info:
+            return None
+
         social = SocialInfo.objects.filter(social_id=user_info["id"]).last()
+        if not social:
+            return None
+
         user = User.objects.filter(id=social.user_id).last()
         if not user:
             return None
@@ -73,7 +91,7 @@ class KakaoAuthService(AuthService):
 
     def _get_access_token(self, data):
         grant_type = "authorization_code"
-        redirect_uri = "http://localhost:8000/auths/kakao"
+        redirect_uri = "http://localhost:8000/auths/kakao/callback"
         client_id = settings.SOCIAL_LOGIN.get("KAKAO").get("CLIENT_ID")
         client_secret = settings.SOCIAL_LOGIN.get("KAKAO").get("CLIENT_SECRET")
         code = data.get("code")
