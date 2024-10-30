@@ -1,8 +1,37 @@
 [tool.ruff]
 line-length = 120
-lint.select = ["E", "F", "W", "C"]
-lint.ignore = [
+select = ["E", "F", "W", "C"]
+ignore = [
     "E402",
     "F841",
     "F811",
 ]
+
+[tool.poetry]
+name = "backend"
+version = "0.1.0"
+description = ""
+authors = ["leeceo97 <leeceo97@naver.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.1.2"
+djangorestframework = "^3.15.2"
+toml = "^0.10.2"
+cffi = "^1.17.1"
+psycopg2-binary = "^2.9.10"
+pre-commit = "^4.0.1"
+ruff = "^0.7.1"
+django-extensions = "^3.2.3"
+djangorestframework-simplejwt = "^5.3.1"
+gunicorn = "^23.0.0"
+pillow = "^11.0.0"
+drf-spectacular = "^0.27.2"
+django-oauth-toolkit = "^3.0.1"
+django-cors-headers = "^4.6.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
