@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
   db:
@@ -16,19 +16,18 @@ services:
 
   api:
     build: ./backend
-    command: bash -c "
-      python manage.py makemigrations &&
-      python manage.py migrate &&
-      python manage.py runscript init_script &&
+    command: bash -c "      
+      poetry install &&
+      poetry run python manage.py makemigrations &&
+      poetry run python manage.py migrate &&
+      poetry run python manage.py runscript init_script &&      
       gunicorn conf.wsgi:application -b 0:8000"
     volumes:
       - ./backend/:/backend/
     expose:
       - 8000
-    env_file:
-      - ./backend/.env
     environment:
-      - DB_HOST=172.30.0.100
+      - DJANGO_SETTINGS_MODULE=conf.settings.docker
     networks:
       default_bridge:
         ipv4_address: 172.30.0.111

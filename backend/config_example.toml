@@ -8,6 +8,12 @@ user = "change me"
 password = "change me"
 host = "127.0.0.1"
 port = "5432"
+[database.docker]
+name = "change me"
+user = "change me"
+password = "change me"
+host = "172.30.0.100"
+port = "5432"
 
 [api_keys]
 [api_keys.kakao]
