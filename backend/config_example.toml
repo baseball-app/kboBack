@@ -1,0 +1,25 @@
+[django]
+secret_key = "change me"
+env = "change me"
+
+[database]
+name = "change me"
+user = "change me"
+password = "change me"
+host = "127.0.0.1"
+port = "5432"
+[database.docker]
+name = "change me"
+user = "change me"
+password = "change me"
+host = "172.30.0.100"
+port = "5432"
+
+[api_keys]
+[api_keys.kakao]
+client_id = "change me"
+client_secret = "change me"
+
+[api_keys.naver]
+client_id = "change me"
+client_secret = "change me"

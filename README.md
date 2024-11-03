@@ -1,14 +1,21 @@
 # kboBack(Backend - API Server)
 
 ## 로컬 실행 가이드
-
+### docker로 빌드 시
 1. Docker 설치 (https://docs.docker.com/get-docker/)
 2. `./kboBack/` 경로에서 `docker-compose up -d --build` 실행
 
+### local 빌드 시
+1. `pip install poetry`
+2. `poetry install`
+3. `poetry run python manage.py makemigrations`
+4. `poetry run python manage.py migrate`
+5. `poetry run python manage.py runserver`
+
 ## 사용 기술
 
-- Language: Python 3.9.13,
-- Framework: Django 3.2.18, Django REST Framework 3.12.4
+- Language: Python 3.12.17,
+- Framework: Django 5.1.2, Django REST Framework 3.15.2
 - Database: PostgreSQL
 
 ## API 명세

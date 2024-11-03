@@ -1,13 +1,26 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
+
 import os
 import sys
 import logging
+from pathlib import Path
+
+import toml
 
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'conf.settings')
+    config = toml.load(Path(__file__).resolve().parent / "config.toml")
+
+    env = config["django"]["env"]
+    if env == "prod":
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "conf.settings.prod")
+    elif env == "dev":
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "conf.settings.dev")
+    else:
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "conf.settings.local")
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -19,11 +32,11 @@ def main():
     logging.basicConfig(
         stream=sys.stdout,
         level=logging.DEBUG,
-        format='%(asctime)s %(levelname)s %(message)s',
+        format="%(asctime)s %(levelname)s %(message)s",
     )
 
     execute_from_command_line(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

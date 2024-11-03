@@ -23,19 +23,24 @@ class Ticket(models.Model):
         (WEATHER4, "바람"),
     )
 
-    writer = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    writer = models.ForeignKey("users.User", on_delete=models.CASCADE)
     date = models.DateField()
-    game = models.ForeignKey('games.Game', on_delete=models.CASCADE, default=1, related_name='ticket_game')
+    game = models.ForeignKey("games.Game", on_delete=models.CASCADE, default=1, related_name="ticket_game")
     result = models.CharField(choices=RESULT_CHOICES, max_length=10)
     weather = models.CharField(choices=WEATHER_CHOICES, max_length=30)
     is_ballpark = models.BooleanField(default=True)
     score_our = models.IntegerField(default=0)
     score_opponent = models.IntegerField(default=0)
-    opponent = models.ForeignKey('games.Game', on_delete=models.SET_NULL, null=True, related_name='ticket_opponent')
+    opponent = models.ForeignKey(
+        "games.Game",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="ticket_opponent",
+    )
     starting_pitchers = models.CharField(max_length=255)
-    ballpark = models.ForeignKey('games.Ballpark', on_delete=models.SET_NULL, null=True)
+    ballpark = models.ForeignKey("games.Ballpark", on_delete=models.SET_NULL, null=True)
     gip_place = models.CharField(max_length=255, null=True, blank=True)
-    image = models.ImageField(upload_to='images/', null=True, blank=True)
+    image = models.ImageField(upload_to="images/", null=True, blank=True)
     food = models.CharField(max_length=255, null=True, blank=True)
     memo = models.TextField(null=True, blank=True)
     is_homeballpark = models.BooleanField(default=True)
