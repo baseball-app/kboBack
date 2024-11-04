@@ -1,33 +1,62 @@
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers
 
-SWAGGER_AUTHS_TAGS = ["AUTHS"]
+SWAGGER_AUTHS_TAGS = ["auths"]
 
-QUERY_PARAMETER_CODE = OpenApiParameter(
+BODY_PARAMETER_FOR_TOKEN = inline_serializer(
     name="code",
-    type=str,
-    location=OpenApiParameter.QUERY,
-    description="code",
+    fields={
+        'code': serializers.CharField(),
+        'state': serializers.CharField(),
+    },
+)
+
+BODY_PARAMETER_REFRESH_TOKEN = inline_serializer(
+    name="refresh_token",
+    fields={
+        'refresh_token': serializers.CharField(),
+    },
     required=True,
 )
 
-QUERY_PARAMETER_STATE = OpenApiParameter(
-    name="state",
-    type=str,
-    location=OpenApiParameter.QUERY,
-    description="state",
-    required=True,
+SWAGGER_NAVER_REGISTER = extend_schema(
+    tags=SWAGGER_AUTHS_TAGS,
+    summary="네이버 소셜 로그인하여 회원가입",
+    description="네이버 아이디로 로그인하여 회원가입",
+    request=BODY_PARAMETER_FOR_TOKEN,
 )
 
-SWAGGER_AUTHS_NAVER = extend_schema(
+SWAGGER_KAKAO_REGISTER = extend_schema(
     tags=SWAGGER_AUTHS_TAGS,
-    summary="네이버 소셜 로그인",
-    description="네이버 아이디로 로그인",
-    parameters=[QUERY_PARAMETER_CODE, QUERY_PARAMETER_STATE],
+    summary="카카오 소셜 로그인하여 회원가입",
+    description="카카오 아이디로 로그인하여 회원가입",
+    request=BODY_PARAMETER_FOR_TOKEN,
 )
 
-SWAGGER_AUTHS_KAKAO = extend_schema(
+SWAGGER_KAKAO_TOKEN = extend_schema(
     tags=SWAGGER_AUTHS_TAGS,
-    summary="카카오 소셜 로그인",
-    description="카카오 아이디로 로그인",
-    parameters=[QUERY_PARAMETER_CODE, QUERY_PARAMETER_STATE],
+    summary="카카오 로그인으로 토큰 발급",
+    description="카카오 로그인으로 토큰 발급",
+    request=BODY_PARAMETER_FOR_TOKEN,
+)
+
+SWAGGER_NAVER_TOKEN = extend_schema(
+    tags=SWAGGER_AUTHS_TAGS,
+    summary="네이버 로그인으로 토큰 발급",
+    description="네이버 로그인으로 토큰 발급",
+    request=BODY_PARAMETER_FOR_TOKEN,
+)
+
+SWAGGER_TOKEN_REFRESH = extend_schema(
+    tags=SWAGGER_AUTHS_TAGS,
+    summary="토큰 새로고침",
+    description="토큰 새로고침",
+    request=BODY_PARAMETER_REFRESH_TOKEN,
+)
+
+SWAGGER_TOKEN_REVOKE = extend_schema(
+    tags=SWAGGER_AUTHS_TAGS,
+    summary="토큰 무효화(로그아웃)",
+    description="토큰 무효화(로그아웃)",
+    parameters=[],
 )
