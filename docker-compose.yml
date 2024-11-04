@@ -19,9 +19,8 @@ services:
     command: bash -c "      
       poetry install &&
       poetry run python manage.py makemigrations &&
-      poetry run python manage.py migrate &&
-      poetry run python manage.py runscript init_script &&      
-      gunicorn conf.wsgi:application -b 0:8000"
+      poetry run python manage.py migrate &&      
+      poetry run gunicorn conf.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - ./backend/:/backend/
     expose:
