@@ -2,6 +2,16 @@
 secret_key = "change me"
 env = "change me"
 
+[init]
+email = "abc@abc.com"
+nickname = "change_me"
+password = "change_me"
+client_id = "change_me"
+client_secret = "change_me"
+client_type = "change_me"
+authorization_grant_type = "change_me"
+redirect_uris = "change_me"
+
 [database]
 name = "change me"
 user = "change me"
