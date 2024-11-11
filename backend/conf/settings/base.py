@@ -32,6 +32,8 @@ THIRD_PARTY_APPS = [
     "oauth2_provider",
     "django_extensions",
     "drf_spectacular",
+    "django_celery_beat",
+    "django_celery_results",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
@@ -62,7 +64,7 @@ REST_FRAMEWORK = {
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
-CUSTOM_HEADER_NAME = 'HTTP_X_KBOAPP_TOKEN'
+CUSTOM_HEADER_NAME = "HTTP_X_KBOAPP_TOKEN"
 
 OAUTH2_PROVIDER = {
     "SCOPES": {"read": "Read scope", "write": "Write scope"},
@@ -150,7 +152,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Seoul"
 
 USE_I18N = True
 
@@ -177,3 +179,11 @@ LOGGING = {
         },
     },
 }
+
+# Celery
+CELERY_BROKER_URL = config["celery"]["broker_url"]
+CELERY_RESULT_BACKEND = config["celery"]["result_backend"]
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Asia/Seoul"
