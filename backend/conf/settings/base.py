@@ -25,6 +25,7 @@ PROJECT_APPS = [
     "apps.games",
     "apps.alerts",
     "apps.auths",
+    "apps.notifications",
 ]
 
 THIRD_PARTY_APPS = [
@@ -62,7 +63,7 @@ REST_FRAMEWORK = {
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
-CUSTOM_HEADER_NAME = 'HTTP_X_KBOAPP_TOKEN'
+CUSTOM_HEADER_NAME = "HTTP_X_KBOAPP_TOKEN"
 
 OAUTH2_PROVIDER = {
     "SCOPES": {"read": "Read scope", "write": "Write scope"},
