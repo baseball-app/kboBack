@@ -1,25 +1,16 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
 
-import os
 import sys
 import logging
-from pathlib import Path
 
-import toml
+
+from conf.utils import set_environment
 
 
 def main():
     """Run administrative tasks."""
-    config = toml.load(Path(__file__).resolve().parent / "config.toml")
-
-    env = config["django"]["env"]
-    if env == "prod":
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "conf.settings.prod")
-    elif env == "dev":
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "conf.settings.dev")
-    else:
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "conf.settings.local")
+    set_environment()
 
     try:
         from django.core.management import execute_from_command_line
