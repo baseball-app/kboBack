@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: kboback_user
       POSTGRES_PASSWORD: kboback_password
     ports:
-      - "5432:5432"
+      - "15432:5432"
     networks:
       default_bridge:
         ipv4_address: 172.30.0.100
@@ -27,7 +27,7 @@ services:
     expose:
       - 8000
     environment:
-      - DJANGO_SETTINGS_MODULE=conf.settings.docker
+      - DJANGO_SETTINGS_MODULE=conf.settings.base
     networks:
       default_bridge:
         ipv4_address: 172.30.0.111
