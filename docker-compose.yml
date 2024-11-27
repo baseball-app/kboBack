@@ -27,7 +27,7 @@ services:
     expose:
       - 8000
     environment:
-      - DJANGO_SETTINGS_MODULE=conf.settings.base
+      - DJANGO_SETTINGS_MODULE=conf.settings.local
     networks:
       default_bridge:
         ipv4_address: 172.30.0.111
