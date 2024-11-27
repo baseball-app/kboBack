@@ -26,6 +26,7 @@ PROJECT_APPS = [
     "apps.alerts",
     "apps.auths",
     "apps.notifications",
+    "apps.teams",
 ]
 
 THIRD_PARTY_APPS = [

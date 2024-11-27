@@ -7,4 +7,5 @@ urlpatterns = [
     path("tickets/", include("apis.tickets.urls")),
     path("users/", include("apis.users.urls")),
     path("notifications/", include("apis.notifications.urls")),
+    path("teams/", include("apis.teams.urls")),
 ]
