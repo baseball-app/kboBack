@@ -46,13 +46,12 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampModel):
         return self.nickname
 
 
-class Friendship(models.Model):
-    user1 = models.ForeignKey("User", related_name="friendships_initiated", on_delete=models.CASCADE)
-    user2 = models.ForeignKey("User", related_name="friendships_received", on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+class Friendship(TimeStampModel):
+    source = models.ForeignKey("User", related_name="friendships_source", on_delete=models.DO_NOTHING)
+    target = models.ForeignKey("User", related_name="friendships_target", on_delete=models.DO_NOTHING)
 
     class Meta:
-        unique_together = ("user1", "user2")
+        unique_together = ("source", "target")
 
-    def __str__(self):
-        return f"{self.user1} and {self.user2} are friends"
+    def str(self):
+        return f"{self.source} and {self.target} are friends"

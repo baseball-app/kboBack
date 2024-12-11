@@ -1,25 +1,15 @@
 from django.db import models
 
-
-class Team(models.Model):
-    name = models.CharField(max_length=30)
-    logo = models.ImageField(upload_to="images/")
+from base.models import TimeStampModel
 
 
 class Ballpark(models.Model):
     name = models.CharField(max_length=50)
-    team = models.ForeignKey(
-        "games.Team",
-        related_name="ballparks",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=False,
-    )
+    team = models.ForeignKey("teams.Team", related_name="ballparks", on_delete=models.DO_NOTHING, null=True)
 
 
-class Game(models.Model):
-    date = models.DateField()
-    team_home = models.ForeignKey("games.Team", on_delete=models.CASCADE, related_name="home_games")
-    team_away = models.ForeignKey("games.Team", on_delete=models.CASCADE, related_name="away_games")
-    ballpark = models.ForeignKey("games.Ballpark", on_delete=models.CASCADE, related_name="games")
-    time = models.TimeField()
+class Game(TimeStampModel):
+    team_home = models.ForeignKey("teams.Team", on_delete=models.DO_NOTHING, related_name="home_games")
+    team_away = models.ForeignKey("teams.Team", on_delete=models.DO_NOTHING, related_name="away_games")
+    ballpark = models.ForeignKey("games.Ballpark", on_delete=models.DO_NOTHING, related_name="games")
+    game_date = models.DateTimeField()

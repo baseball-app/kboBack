@@ -8,5 +8,5 @@ class User(admin.ModelAdmin):
 
 
 @admin.register(models.Friendship)
-class Frientship(admin.ModelAdmin):
+class Friendship(admin.ModelAdmin):
     pass
