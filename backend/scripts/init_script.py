@@ -15,7 +15,7 @@ def make_auth():
     nickname = config["init"]["nickname"]
     password = config["init"]["password"]
 
-    default_user = User.objects.get_or_create(
+    default_user, _ = User.objects.get_or_create(
         email=email,
         nickname=nickname,
         password=password,
