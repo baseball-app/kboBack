@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, Serializer
 
-from apps.teams.models import Team, UserTeam
+from apps.teams.models import UserTeam
 from apps.users.models import Friendship
 
 
@@ -52,3 +52,8 @@ class UserInfoSerializer(Serializer):
 
     def get_followings(self, obj):
         return list(Friendship.objects.filter(source=obj).values_list('target_id', flat=True))
+
+
+class UserFollowSerializer(Serializer):
+    source_id = serializers.IntegerField(required=True)
+    target_id = serializers.IntegerField(required=True)
