@@ -57,3 +57,7 @@ class UserInfoSerializer(Serializer):
 class UserFollowSerializer(Serializer):
     source_id = serializers.IntegerField(required=True)
     target_id = serializers.IntegerField(required=True)
+
+
+class UserInvitationSerializer(Serializer):
+    code = serializers.CharField()
