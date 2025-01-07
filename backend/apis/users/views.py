@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from .serializers import UserInfoSerializer, UserFollowSerializer, UserInvitationSerializer
-from .services import UserFollowService, UserInvitationService
+from .serializers import UserInfoSerializer, UserFollowSerializer, UserInvitationSerializer, UserLeaveSerializer
+from .services import UserFollowService, UserInvitationService, UserLeaveService
 from .swagger import SWAGGER_USERS_ME, SWAGGER_USERS_FOLLOW, SWAGGER_USERS_UNFOLLOW
 
 
@@ -20,7 +20,18 @@ class UsersViewSet(GenericViewSet):
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
     def me(self, request):
         serializer = UserInfoSerializer(request.user)
-        return Response(serializer.data)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
+    def leave(self, request):
+        serializer = UserLeaveSerializer(request.user)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        service = UserLeaveService()
+        service.leave(request.user.id, data.get('email'))
+
+        return Response(status=status.HTTP_200_OK)
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
     def follow(self, request):

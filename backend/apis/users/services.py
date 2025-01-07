@@ -33,3 +33,8 @@ class UserInvitationService:
         decoded_code = base64.urlsafe_b64decode(invite_code).decode()
         unique_id, user_id = decoded_code.split(':')
         return user_id
+
+
+class UserLeaveService:
+    def leave(self, user_id, email):
+        User.objects.get(id=user_id, email=email).delete()
