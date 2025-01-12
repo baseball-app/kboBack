@@ -7,11 +7,6 @@ class AdminGame(admin.ModelAdmin):
     pass
 
 
-@admin.register(models.Team)
-class AdminTeam(admin.ModelAdmin):
-    pass
-
-
 @admin.register(models.Ballpark)
 class AdminBallpark(admin.ModelAdmin):
     pass

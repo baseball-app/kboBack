@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: kboback_user
       POSTGRES_PASSWORD: kboback_password
     ports:
-      - "5432:5432"
+      - "15432:5432"
     networks:
       default_bridge:
         ipv4_address: 172.30.0.100
@@ -19,15 +19,15 @@ services:
     command: bash -c "      
       poetry install &&
       poetry run python manage.py makemigrations &&
-      poetry run python manage.py migrate &&
-      poetry run python manage.py runscript init_script &&      
-      gunicorn conf.wsgi:application -b 0:8000"
+      poetry run python manage.py migrate &&      
+      poetry run python manage.py runscript init_script &&
+      poetry run gunicorn conf.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - ./backend/:/backend/
     expose:
       - 8000
     environment:
-      - DJANGO_SETTINGS_MODULE=conf.settings.docker
+      - DJANGO_SETTINGS_MODULE=conf.settings.local
     networks:
       default_bridge:
         ipv4_address: 172.30.0.111

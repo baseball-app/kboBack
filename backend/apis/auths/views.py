@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from drf_spectacular.utils import extend_schema_view
+from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -10,7 +10,8 @@ from apps.auths.chocies import SocialTypeEnum
 from apps.auths.models import SocialInfo
 from .serializers import KakaoInputSerializer, NaverInputSerializer, TokenRefreshSerializer
 from .services import NaverAuthService, KakaoAuthService
-from .swagger import SWAGGER_AUTHS_NAVER, SWAGGER_AUTHS_KAKAO
+from .swagger import SWAGGER_NAVER_REGISTER, SWAGGER_KAKAO_REGISTER, SWAGGER_NAVER_TOKEN, SWAGGER_KAKAO_TOKEN, \
+    SWAGGER_TOKEN_REFRESH, SWAGGER_TOKEN_REVOKE
 from .utils import issue_tokens, reissue_tokens, revoke_tokens
 from ..exceptions import ApiValidationError
 
@@ -18,8 +19,14 @@ User = get_user_model()
 
 
 @extend_schema_view(
-    naver=SWAGGER_AUTHS_NAVER,
-    kakao=SWAGGER_AUTHS_KAKAO,
+    naver_register=SWAGGER_NAVER_REGISTER,
+    kakao_register=SWAGGER_KAKAO_REGISTER,
+    naver_token=SWAGGER_NAVER_TOKEN,
+    kakao_token=SWAGGER_KAKAO_TOKEN,
+    token_refresh=SWAGGER_TOKEN_REFRESH,
+    token_revoke=SWAGGER_TOKEN_REVOKE,
+    token_test=extend_schema(exclude=True),
+    login_test=extend_schema(exclude=True),
 )
 class AuthsViewSet(GenericViewSet):
     @action(methods=["POST"], url_path='token-test', detail=False, permission_classes=[AllowAny])
