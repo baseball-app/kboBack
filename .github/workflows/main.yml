@@ -51,7 +51,7 @@ jobs:
             poetry install
             poetry run python manage.py makemigrations
             poetry run python manage.py migrate
-            poetry run python manage.py runserver ${{ secrets.LOCAL_HOST }}:${{ secrets.LOCAL_PORT }}
+            sudo systemctl restart kbo-api
 
       - name: Remove Github Actions IP from security group
         run: |
