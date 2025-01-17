@@ -46,7 +46,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
-            cd ~/kboapp/backend
+            cd ~/kboBack/backend
             git pull origin ${{ github.ref_name }}
             poetry install
             poetry run python manage.py makemigrations
