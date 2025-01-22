@@ -7,4 +7,4 @@ class TicketSerializer(ModelSerializer):
     class Meta:
         fields = ['id', 'date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
                   'gip_place', 'image', 'food', 'memo', 'is_homeballpark', 'created_at', 'updated_at', 'ballpark',
-                  'game', 'opponent', 'writer']
+                  'game', 'opponent', 'writer','like','love','haha','yay','wow','sad','angry']

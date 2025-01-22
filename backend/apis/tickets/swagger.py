@@ -43,3 +43,9 @@ SWAGGER_TICKETS_DOUBLE_ADD = extend_schema(
     summary="직관 일기 추가(더블헤더)",
     description="내 직관일기를 추가합니다.",
 )
+
+SWAGGER_TICKETS_REACTION = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="직관 일기 반응 추가",
+    description="직관 일기에 대한 반응을 추가합니다",
+)

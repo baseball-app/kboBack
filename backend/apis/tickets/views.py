@@ -5,10 +5,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from django.shortcuts import get_object_or_404
 
 from apis.tickets.serializers import TicketSerializer
-from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD
+from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION
 from apps.tickets.models import Ticket
+
+from .service import TicketReactionService
 
 @extend_schema_view(
     ticketAdd=SWAGGER_TICKETS_ADD,
@@ -16,6 +19,7 @@ from apps.tickets.models import Ticket
     ticketDel=SWAGGER_TICKETS_DEL,
     ticketList=SWAGGER_TICKETS_LIST,
     ticketDouAdd=SWAGGER_TICKETS_DOUBLE_ADD,
+    ticketReaction=SWAGGER_TICKETS_REACTION,
 )
 
 class TicketsViewSet(
@@ -61,3 +65,19 @@ class TicketsViewSet(
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated]) #티켓에 반응 추가하기
+    def ticketReaction(self, request, pk=None):
+        ticket = get_object_or_404(Ticket, pk=pk)
+        reaction_pos = request.data.get("reaction_pos")
+
+        service = TicketReactionService()
+
+        if reaction_pos == "add":
+            service.add_reaction(reaction_pos)
+        elif reaction_pos == "del":
+            service.del_reaction(reaction_pos)
+
+        ticket.save()
+        serializer = TicketSerializer(ticket)
+        return Response(serializer.data, status=status.HTTP_200_OK)
