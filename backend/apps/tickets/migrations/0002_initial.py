@@ -20,4 +20,39 @@ class Migration(migrations.Migration):
             name='writer',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
         ),
+        migrations.AddField(
+            model_name='ticket',
+            name='like',
+            field=models.IntegerField(default=0),
+        ),
+        migrations.AddField(
+            model_name='ticket',
+            name='love',
+            field=models.IntegerField(default=0),
+        ),
+        migrations.AddField(
+            model_name='ticket',
+            name='haha',
+            field=models.IntegerField(default=0),
+        ),
+        migrations.AddField(
+            model_name='ticket',
+            name='yay',
+            field=models.IntegerField(default=0),
+        ),
+        migrations.AddField(
+            model_name='ticket',
+            name='wow',
+            field=models.IntegerField(default=0),
+        ),
+        migrations.AddField(
+            model_name='ticket',
+            name='sad',
+            field=models.IntegerField(default=0),
+        ),
+        migrations.AddField(
+            model_name='ticket',
+            name='angry',
+            field=models.IntegerField(default=0),
+        ),
     ]
