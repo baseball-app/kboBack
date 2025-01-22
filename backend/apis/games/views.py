@@ -1,20 +1,52 @@
-from rest_framework.mixins import (
-    ListModelMixin,
-    CreateModelMixin,
-    UpdateModelMixin,
-    DestroyModelMixin,
-)
+from drf_spectacular.utils import extend_schema_view
+from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.response import Response
+from datetime import datetime
+
+from apis.games.serializers import GameSerializer
+from apis.games.swagger import SWAGGER_GAMES_LIST
+from apps.games.models import Game
 
 
+@extend_schema_view(
+    list=SWAGGER_GAMES_LIST,
+)
 class GamesViewSet(
     ListModelMixin,
-    CreateModelMixin,
-    UpdateModelMixin,
-    DestroyModelMixin,
     GenericViewSet,
 ):
     permission_classes = [
         IsAuthenticated,
     ]
+
+    serializer_class = GameSerializer
+
+    def get_queryset(self):
+        queryset = Game.objects.all()
+
+        start_date = self.request.query_params.get("start_date", None)
+        end_date = self.request.query_params.get("end_date", None)
+
+        if start_date and end_date:
+            try:
+                start_datetime = datetime.strptime(start_date, "%Y-%m-%d")
+                end_datetime = datetime.strptime(end_date, "%Y-%m-%d")
+                queryset = queryset.filter(game_date__date__gte=start_datetime, game_date__date__lte=end_datetime)
+            except ValueError:
+                # 날짜 형식이 잘못된 경우 빈 쿼리셋 반환
+                return Game.objects.none()
+
+        return queryset.select_related("team_home", "team_away", "ballpark")
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
