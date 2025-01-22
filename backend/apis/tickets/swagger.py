@@ -9,6 +9,14 @@ QUERY_PARAMETER_READ_TYPE = OpenApiParameter(
     name="id",
     type=str,
     location=OpenApiParameter.QUERY,
+    description="티켓 소지 유저 확인",
+    required=False,
+)
+
+QUERY_PARAMETER_READ_DETAIL_TYPE = OpenApiParameter(
+    name="ticket",
+    type=str,
+    location=OpenApiParameter.QUERY,
     description="티켓 정보 읽기",
     required=False,
 )
@@ -18,6 +26,13 @@ SWAGGER_TICKETS_LIST = extend_schema(
     summary="직관 일기 조회",
     parameters=[QUERY_PARAMETER_READ_TYPE],
     description="직관 일기 조회 목록 표출",
+)
+
+SWAGGER_TICKETS_DETAIL = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="직관 일기 상세 보기",
+    parameters=[QUERY_PARAMETER_READ_DETAIL_TYPE],
+    description="직관 일기 상세 표기 표출",
 )
 
 SWAGGER_TICKETS_ADD = extend_schema(

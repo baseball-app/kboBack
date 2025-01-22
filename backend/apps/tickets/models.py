@@ -54,3 +54,5 @@ class Ticket(models.Model):
     wow = models.IntegerField(default=0)
     sad = models.IntegerField(default=0)
     angry = models.IntegerField(default=0)
+
+    only_me = models.BooleanField(default=True)

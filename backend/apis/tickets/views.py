@@ -8,7 +8,7 @@ from rest_framework.viewsets import GenericViewSet
 from django.shortcuts import get_object_or_404
 
 from apis.tickets.serializers import TicketSerializer
-from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION
+from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL
 from apps.tickets.models import Ticket
 
 from .service import TicketReactionService
@@ -20,6 +20,7 @@ from .service import TicketReactionService
     ticketList=SWAGGER_TICKETS_LIST,
     ticketDouAdd=SWAGGER_TICKETS_DOUBLE_ADD,
     ticketReaction=SWAGGER_TICKETS_REACTION,
+    ticketDetail=SWAGGER_TICKETS_DETAIL,
 )
 
 class TicketsViewSet(
@@ -29,12 +30,19 @@ class TicketsViewSet(
         AllowAny,
     ]
 
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 티켓 일렬로 보기
     def ticketList(self, request):
         user = request.user
         queryset = Ticket.objects.filter(writer=user)
         serializer = TicketSerializer(queryset, many=True)  # 쿼리셋 직렬화
         return Response(serializer.data)
+
+    @action(methods=["GET"], detail=True, permission_classes=[IsAuthenticated])  # 티켓 상세 보기
+    def ticketDetail(self, request, pk=None):
+        user = request.user
+        ticket = get_object_or_404(Ticket, pk=pk, writer=user)  # 특정 티켓 조회 및 작성자 확인
+        serializer = TicketSerializer(ticket)  # 티켓 직렬화
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated]) #일반 스케줄 시 등록 경우
     def ticketAdd(self, request):
@@ -73,9 +81,9 @@ class TicketsViewSet(
 
         service = TicketReactionService()
 
-        if reaction_pos == "add":
+        if reaction_pos == "add": # 반응 추가
             service.add_reaction(reaction_pos)
-        elif reaction_pos == "del":
+        elif reaction_pos == "del": # 반응 삭제
             service.del_reaction(reaction_pos)
 
         ticket.save()
