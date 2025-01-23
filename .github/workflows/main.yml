@@ -54,6 +54,7 @@ jobs:
             sudo systemctl restart kbo-api
 
       - name: Remove Github Actions IP from security group
+        if: always()
         run: |
           aws ec2 revoke-security-group-ingress --group-name ${{ env.AWS_SG_NAME }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
         env:
