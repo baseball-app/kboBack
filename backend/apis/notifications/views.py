@@ -7,7 +7,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from apis.notifications.enums import NOTIFICATION_READ_TYPE
 from apis.notifications.serializers import NotificationSerializer
 from apis.notifications.swagger import SWAGGER_NOTIFICATIONS_LIST, SWAGGER_NOTIFICATIONS_UPDATE
 from apps.notifications.models import Notification
@@ -30,13 +29,8 @@ class NotificationsViewSet(
 
     def get_queryset(self):
         if self.action == "list":
-            read_type = self.request.query_params.get("read_type", NOTIFICATION_READ_TYPE.ALL_NOTIFICATIONS)
             friends = self.request.user.friendships_source.values_list("target", flat=True)
-            # 회의 때 알림 관련해서 여쭤보고 수정하기
-            if read_type == NOTIFICATION_READ_TYPE.FRIEND_FEEDBACK_NOTIFICATION:
-                target_ids = [self.request.user.id] + [friends]
-            else:
-                target_ids = [self.request.user.id] + [friends]
+            target_ids = [self.request.user.id] + [friends]
 
             return Notification.objects.filter(user__id__in=target_ids)
         return Notification.objects.filter(user=self.request.user)
@@ -47,7 +41,9 @@ class NotificationsViewSet(
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            response = self.get_paginated_response(serializer.data)
+            response.data["last_page"] = self.paginator.page.paginator.num_pages  # 수정된 부분
+            return response
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
