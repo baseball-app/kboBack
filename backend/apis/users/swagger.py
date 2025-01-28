@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema, OpenApiParameter, inline_serializer
 from rest_framework import serializers
 
-SWAGGER_USERS_TAGS = ["USERS"]
+SWAGGER_USERS_TAGS = ["users"]
 
 QUERY_PARAMETER_EMAIL = OpenApiParameter(
     name="email",
@@ -41,6 +41,12 @@ SWAGGER_USERS_ME = extend_schema(
     description="내 정보를 확인 합니다.",
 )
 
+SWAGGER_USERS_LEAVE = extend_schema(
+    tags=SWAGGER_USERS_TAGS,
+    summary="회원 탈퇴",
+    description="회원에서 탈퇴 합니다.",
+)
+
 SWAGGER_USERS_FOLLOW = extend_schema(
     tags=SWAGGER_USERS_TAGS,
     summary="친구 팔로우",
@@ -52,5 +58,33 @@ SWAGGER_USERS_UNFOLLOW = extend_schema(
     tags=SWAGGER_USERS_TAGS,
     summary="친구 언팔로우",
     description="친구를 언팔로우 합니다.",
+    request=BODY_PARAMETER_FOR_UNFOLLOW,
+)
+
+SWAGGER_USERS_FOLLOWERS = extend_schema(
+    tags=SWAGGER_USERS_TAGS,
+    summary="팔로워 조회",
+    description="팔로워를 조회 합니다.",
+    request=BODY_PARAMETER_FOR_FOLLOW,
+)
+
+SWAGGER_USERS_FOLLOWINGS = extend_schema(
+    tags=SWAGGER_USERS_TAGS,
+    summary="팔로잉 조회",
+    description="팔로잉 한 친구를 조회 합니다.",
+    request=BODY_PARAMETER_FOR_FOLLOW,
+)
+
+SWAGGER_USERS_INVITATION_CODE = extend_schema(
+    tags=SWAGGER_USERS_TAGS,
+    summary="친구 초대 코드 발급",
+    description="친구 초대를 위한 초대 코드 발급",
+    request=BODY_PARAMETER_FOR_UNFOLLOW,
+)
+
+SWAGGER_USERS_APPLY_INVITATION = extend_schema(
+    tags=SWAGGER_USERS_TAGS,
+    summary="친구 초대 코드 수락",
+    description="전달 받은 친구 코드로 친구 수락",
     request=BODY_PARAMETER_FOR_UNFOLLOW,
 )
