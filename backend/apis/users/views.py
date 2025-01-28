@@ -5,15 +5,22 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from .serializers import UserInfoSerializer, UserFollowSerializer, UserInvitationSerializer, UserLeaveSerializer
+from .serializers import UserInfoSerializer, UserFollowSerializer, UserInvitationSerializer, UserLeaveSerializer, \
+    UserFollowersSerializer, UserFollowingsSerializer
 from .services import UserFollowService, UserInvitationService, UserLeaveService
-from .swagger import SWAGGER_USERS_ME, SWAGGER_USERS_FOLLOW, SWAGGER_USERS_UNFOLLOW
+from .swagger import SWAGGER_USERS_ME, SWAGGER_USERS_FOLLOW, SWAGGER_USERS_UNFOLLOW, SWAGGER_USERS_LEAVE, \
+    SWAGGER_USERS_INVITATION_CODE, SWAGGER_USERS_APPLY_INVITATION, SWAGGER_USERS_FOLLOWERS, SWAGGER_USERS_FOLLOWINGS
 
 
 @extend_schema_view(
     me=SWAGGER_USERS_ME,
+    leave=SWAGGER_USERS_LEAVE,
     follow=SWAGGER_USERS_FOLLOW,
     unfollow=SWAGGER_USERS_UNFOLLOW,
+    followers=SWAGGER_USERS_FOLLOWERS,
+    followings=SWAGGER_USERS_FOLLOWINGS,
+    invitation_code=SWAGGER_USERS_INVITATION_CODE,
+    apply_invitation=SWAGGER_USERS_APPLY_INVITATION
 )
 class UsersViewSet(GenericViewSet):
 
@@ -54,6 +61,16 @@ class UsersViewSet(GenericViewSet):
         service.release_relation(data.get("source_id"), data.get("target_id"))
 
         return Response(status=status.HTTP_200_OK)
+
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
+    def followers(self, request):
+        serializer = UserFollowersSerializer(instance=request.user)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
+    def followings(self, request):
+        serializer = UserFollowingsSerializer(instance=request.user)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
 
     @action(methods=["GET"], url_path='invitation-code', detail=False, permission_classes=[IsAuthenticated])
     def invitation_code(self, request):
