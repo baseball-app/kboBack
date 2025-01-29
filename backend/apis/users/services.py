@@ -3,6 +3,7 @@ import uuid
 
 from django.contrib.auth import get_user_model
 
+from apps.teams.models import UserTeam
 from apps.users.models import Friendship
 
 User = get_user_model()
@@ -38,3 +39,15 @@ class UserInvitationService:
 class UserLeaveService:
     def leave(self, user_id, email):
         User.objects.get(id=user_id, email=email).delete()
+
+
+class UserModifyService:
+    def modify(self, user, validated_data):
+        update_fields = {k: v for k, v in validated_data.items() if k in ["nickname", "profile_image"] and v}
+
+        if update_fields:
+            user.__dict__.update(update_fields)
+            user.save(update_fields=update_fields.keys())
+
+        if "my_team" in validated_data and validated_data["my_team"]:
+            UserTeam.objects.filter(user_id=user.id).update(team_id=validated_data["my_team"])

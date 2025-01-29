@@ -6,14 +6,16 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from .serializers import UserInfoSerializer, UserFollowSerializer, UserInvitationSerializer, UserLeaveSerializer, \
-    UserFollowersSerializer, UserFollowingsSerializer
-from .services import UserFollowService, UserInvitationService, UserLeaveService
+    UserFollowersSerializer, UserFollowingsSerializer, UserModifySerializer
+from .services import UserFollowService, UserInvitationService, UserLeaveService, UserModifyService
 from .swagger import SWAGGER_USERS_ME, SWAGGER_USERS_FOLLOW, SWAGGER_USERS_UNFOLLOW, SWAGGER_USERS_LEAVE, \
-    SWAGGER_USERS_INVITATION_CODE, SWAGGER_USERS_APPLY_INVITATION, SWAGGER_USERS_FOLLOWERS, SWAGGER_USERS_FOLLOWINGS
+    SWAGGER_USERS_INVITATION_CODE, SWAGGER_USERS_APPLY_INVITATION, SWAGGER_USERS_FOLLOWERS, SWAGGER_USERS_FOLLOWINGS, \
+    SWAGGER_USERS_MODIFY
 
 
 @extend_schema_view(
     me=SWAGGER_USERS_ME,
+    modify=SWAGGER_USERS_MODIFY,
     leave=SWAGGER_USERS_LEAVE,
     follow=SWAGGER_USERS_FOLLOW,
     unfollow=SWAGGER_USERS_UNFOLLOW,
@@ -28,6 +30,17 @@ class UsersViewSet(GenericViewSet):
     def me(self, request):
         serializer = UserInfoSerializer(request.user)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
+    def modify(self, request):
+        serializer = UserModifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        service = UserModifyService()
+        service.modify(request.user, validated_data)
+
+        return Response(status=status.HTTP_200_OK, data=validated_data)
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
     def leave(self, request):

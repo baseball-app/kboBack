@@ -1,18 +1,17 @@
 import requests
+from django.conf import settings
+from django.db import transaction
 
+from apps.auths.chocies import SocialTypeEnum
 from apps.auths.models import SocialInfo
 from apps.users.models import User
-from django.conf import settings
 
 
 class AuthService:
-    def get_user_info(self):
+    def _get_access_token(self, data):
         pass
 
-    def get_access_token(self, code: str, state: str):
-        pass
-
-    def get_user_info(self, access_token: str):
+    def _get_user_info(self, access_token: str):
         pass
 
 
@@ -21,20 +20,25 @@ class NaverAuthService(AuthService):
         access_token = self._get_access_token(data)
         if not access_token:
             return None
+        return self._get_user_info(access_token)
 
-        user_info = self._get_user_info(access_token)
-        if not user_info:
-            return None
+    def auth_or_register(self, social_user_info):
+        social_id = social_user_info["id"]
 
-        social = SocialInfo.objects.filter(social_id=user_info["id"]).last()
-        if not social:
-            return None
+        # 기존 유저 조회
+        social_info = SocialInfo.objects.filter(social_id=social_id).last()
+        if social_info:
+            user = User.objects.filter(id=social_info.user_id).last()
+            if not user:
+                return None, None
+            return user, False
 
-        user = User.objects.filter(social_id=social.user_id).last()
-        if not user:
-            return None
+        # 신규 유저 생성
+        with transaction.atomic():
+            user = User.objects.create(nickname=f'naver_{social_id}')
+            SocialInfo.objects.create(user=user, social_id=social_id, type=SocialTypeEnum.NAVER.value)
 
-        return user
+        return user, True
 
     def _get_access_token(self, data):
         grant_type = "authorization_code"
@@ -63,31 +67,25 @@ class KakaoAuthService(AuthService):
         access_token = self._get_access_token(data)
         if not access_token:
             return None
+        return self._get_user_info(access_token)
 
-        user_info = self._get_user_info(access_token)
-        if not user_info:
-            return None
+    def auth_or_register(self, social_user_info):
+        social_id = social_user_info["id"]
 
-        return user_info
+        # 기존 유저 조회
+        social_info = SocialInfo.objects.filter(social_id=social_id).last()
+        if social_info:
+            user = User.objects.filter(id=social_info.user_id).last()
+            if not user:
+                return None, None
+            return user, False
 
-    def get_user(self, data):
-        access_token = self._get_access_token(data)
-        if not access_token:
-            return None
+        # 신규 유저 생성
+        with transaction.atomic():
+            user = User.objects.create(nickname=f'kakao_{social_id}')
+            SocialInfo.objects.create(user=user, social_id=social_id, type=SocialTypeEnum.KAKAO.value)
 
-        user_info = self._get_user_info(access_token)
-        if not user_info:
-            return None
-
-        social = SocialInfo.objects.filter(social_id=user_info["id"]).last()
-        if not social:
-            return None
-
-        user = User.objects.filter(id=social.user_id).last()
-        if not user:
-            return None
-
-        return user
+        return user, True
 
     def _get_access_token(self, data):
         grant_type = "authorization_code"

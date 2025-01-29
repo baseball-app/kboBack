@@ -20,6 +20,15 @@ QUERY_PARAMETER_PASSWORD = OpenApiParameter(
     required=False,
 )
 
+BODY_PARAMETER_FOR_MODIFY = inline_serializer(
+    name="modify",
+    fields={
+        "nickname": serializers.CharField(),
+        "my_team": serializers.IntegerField(),
+        "profile_image": serializers.CharField(),
+    },
+)
+
 BODY_PARAMETER_FOR_FOLLOW = inline_serializer(
     name="follow",
     fields={
@@ -61,6 +70,25 @@ SWAGGER_USERS_ME = extend_schema(
                 },
                 "followers": 20,
                 "followings": 32
+            },
+            response_only=True
+        )
+    ],
+)
+
+SWAGGER_USERS_MODIFY = extend_schema(
+    tags=SWAGGER_USERS_TAGS,
+    summary="회원 정보 수정",
+    description="회원 정보를 수정 합니다.",
+    request=BODY_PARAMETER_FOR_MODIFY,
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            name="Success Example",
+            value={
+                "nickname": "nickname",
+                "my_team": 1,
+                "profile_image": "profile_image"
             },
             response_only=True
         )
