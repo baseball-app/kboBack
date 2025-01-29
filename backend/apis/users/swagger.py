@@ -54,9 +54,13 @@ SWAGGER_USERS_ME = extend_schema(
             value={
                 "nickname": "nickname",
                 "predict_ratio": 1,
-                "my_team": 0,
-                "followers": [2],
-                "followings": [3, 4, 2]
+                "my_team": {
+                    "id": 3,
+                    "name": "LG 트윈스",
+                    "logo_url": "https://image.com/"
+                },
+                "followers": 20,
+                "followings": 32
             },
             response_only=True
         )

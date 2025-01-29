@@ -190,3 +190,10 @@ CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Seoul"
+
+# AWS
+AWS_S3_ACCESS_KEY = config["aws"].get("AWS_S3_ACCESS_KEY", "")
+AWS_S3_SECRET_KEY = config["aws"].get("AWS_S3_SECRET_KEY", "")
+AWS_S3_STORAGE_BUCKET_NAME = config["aws"].get("AWS_S3_STORAGE_BUCKET_NAME", "")
+AWS_S3_REGION_NAME = config["aws"].get("AWS_S3_REGION_NAME", "ap-northeast-2")
+AWS_S3_CUSTOM_DOMAIN = config["aws"].get("AWS_S3_CUSTOM_DOMAIN", "")
