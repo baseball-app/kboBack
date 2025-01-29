@@ -8,8 +8,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from .serializers import KakaoInputSerializer, NaverInputSerializer, TokenRefreshSerializer
 from .services import NaverAuthService, KakaoAuthService
-from .swagger import SWAGGER_NAVER_REGISTER, SWAGGER_KAKAO_REGISTER, SWAGGER_NAVER_TOKEN, SWAGGER_KAKAO_TOKEN, \
-    SWAGGER_TOKEN_REFRESH, SWAGGER_TOKEN_REVOKE
+from .swagger import SWAGGER_TOKEN_REFRESH, SWAGGER_TOKEN_REVOKE, SWAGGER_NAVER, SWAGGER_KAKAO
 from .utils import issue_tokens, reissue_tokens, revoke_tokens
 from ..exceptions import ApiValidationError
 
@@ -17,10 +16,8 @@ User = get_user_model()
 
 
 @extend_schema_view(
-    naver_register=SWAGGER_NAVER_REGISTER,
-    kakao_register=SWAGGER_KAKAO_REGISTER,
-    naver_token=SWAGGER_NAVER_TOKEN,
-    kakao_token=SWAGGER_KAKAO_TOKEN,
+    naver=SWAGGER_NAVER,
+    kakao=SWAGGER_KAKAO,
     token_refresh=SWAGGER_TOKEN_REFRESH,
     token_revoke=SWAGGER_TOKEN_REVOKE,
     token_test=extend_schema(exclude=True),

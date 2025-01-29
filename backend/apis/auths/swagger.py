@@ -19,31 +19,17 @@ BODY_PARAMETER_REFRESH_TOKEN = inline_serializer(
     required=True,
 )
 
-SWAGGER_NAVER_REGISTER = extend_schema(
+SWAGGER_NAVER = extend_schema(
     tags=SWAGGER_AUTHS_TAGS,
-    summary="네이버 소셜 로그인하여 회원가입",
-    description="네이버 아이디로 로그인하여 회원가입",
+    summary="네이버 소셜 로그인하여 회원가입/로그인",
+    description="네이버 아이디로 로그인하여 회원가입/로그인",
     request=BODY_PARAMETER_FOR_TOKEN,
 )
 
-SWAGGER_KAKAO_REGISTER = extend_schema(
+SWAGGER_KAKAO = extend_schema(
     tags=SWAGGER_AUTHS_TAGS,
-    summary="카카오 소셜 로그인하여 회원가입",
-    description="카카오 아이디로 로그인하여 회원가입",
-    request=BODY_PARAMETER_FOR_TOKEN,
-)
-
-SWAGGER_KAKAO_TOKEN = extend_schema(
-    tags=SWAGGER_AUTHS_TAGS,
-    summary="카카오 로그인으로 토큰 발급",
-    description="카카오 로그인으로 토큰 발급",
-    request=BODY_PARAMETER_FOR_TOKEN,
-)
-
-SWAGGER_NAVER_TOKEN = extend_schema(
-    tags=SWAGGER_AUTHS_TAGS,
-    summary="네이버 로그인으로 토큰 발급",
-    description="네이버 로그인으로 토큰 발급",
+    summary="카카오 소셜 로그인하여 회원가입/로그인",
+    description="카카오 아이디로 로그인하여 회원가입/로그인",
     request=BODY_PARAMETER_FOR_TOKEN,
 )
 
