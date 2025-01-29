@@ -6,8 +6,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from apps.auths.chocies import SocialTypeEnum
-from apps.auths.models import SocialInfo
 from .serializers import KakaoInputSerializer, NaverInputSerializer, TokenRefreshSerializer
 from .services import NaverAuthService, KakaoAuthService
 from .swagger import SWAGGER_NAVER_REGISTER, SWAGGER_KAKAO_REGISTER, SWAGGER_NAVER_TOKEN, SWAGGER_KAKAO_TOKEN, \
@@ -38,64 +36,41 @@ class AuthsViewSet(GenericViewSet):
     def login_test(self, request):
         return Response({"message": "success"}, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], url_path='naver/register', detail=False, permission_classes=[AllowAny])
-    def naver_register(self, request):
+    @action(methods=["POST"], detail=False, permission_classes=[AllowAny])
+    def naver(self, request):
         serializer = NaverInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
         auth_service = NaverAuthService()
-
-        if auth_service.get_social_user(data=data):
-            raise ApiValidationError('User is already existed')
-
-        # 유저 추가 로직 추가
-        user = User.objects.create(social_id=data['id'])
-
-        return Response(issue_tokens(user), status=status.HTTP_200_OK)
-
-    @action(methods=["POST"], url_path='naver/token', detail=False, permission_classes=[AllowAny])
-    def naver_token(self, request):
-        serializer = NaverInputSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-
-        auth_service = NaverAuthService()
-        user = auth_service.get_social_user(data=data)
-        if not user:
-            raise ApiValidationError("Login Failed")
-
-        return Response(issue_tokens(user), status=status.HTTP_200_OK)
-
-    @action(methods=["POST"], url_path='kakao/register', detail=False, permission_classes=[AllowAny])
-    def kakao_register(self, request):
-        serializer = KakaoInputSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-
-        auth_service = KakaoAuthService()
-        user_info = auth_service.get_social_user(data=data)
-        if not user_info:
+        social_user_info = auth_service.get_social_user(data=data)
+        if not social_user_info:
             raise ApiValidationError('Token is not valid')
 
-        # 유저 추가 로직 추가
-        user = User.objects.create(nickname=f'kakao_{user_info["id"]}')
-        SocialInfo.objects.create(user=user, social_id=user_info["id"], type=SocialTypeEnum.KAKAO.value)
+        user, is_new_user = auth_service.auth_or_register(social_user_info)
+        if not user:
+            raise ApiValidationError('User is not valid')
 
-        return Response(issue_tokens(user), status=status.HTTP_200_OK)
+        return Response({"is_new_user": is_new_user, **issue_tokens(user)},
+                        status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], url_path='kakao/token', detail=False, permission_classes=[AllowAny])
-    def kakao_token(self, request):
+    @action(methods=["POST"], detail=False, permission_classes=[AllowAny])
+    def kakao(self, request):
         serializer = KakaoInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
         auth_service = KakaoAuthService()
-        user = auth_service.get_user(data=data)
-        if not user:
-            raise ApiValidationError("Login Failed")
+        social_user_info = auth_service.get_social_user(data=data)
+        if not social_user_info:
+            raise ApiValidationError('Token is not valid')
 
-        return Response(issue_tokens(user), status=status.HTTP_200_OK)
+        user, is_new_user = auth_service.auth_or_register(social_user_info)
+        if not user:
+            raise ApiValidationError('User is not valid')
+
+        return Response({"is_new_user": is_new_user, **issue_tokens(user)},
+                        status=status.HTTP_200_OK)
 
     @action(methods=["POST"], url_path='token/refresh', detail=False, permission_classes=[IsAuthenticated])
     def token_refresh(self, request):
