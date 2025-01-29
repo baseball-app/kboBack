@@ -94,16 +94,17 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": f"{SITE_NAME}의 API입니다.",
     "APPEND_COMPONENTS": {
         "securitySchemes": {
-            "Bearer": {
+            "X-KBOAPP-TOKEN": {
                 "type": "apiKey",
-                "name": "Authorization",
+                "name": "X-KBOAPP-TOKEN",
                 "in": "header",
+                'description': 'Custom authentication token for KBO App',
             }
         }
     },
-    "SECURITY": [{"Bearer": []}],
+    'SECURITY': [{'X-KBOAPP-TOKEN': []}],
     "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": False,
+    "SERVE_INCLUDE_SCHEMA": True,
     "SERVE_AUTHENTICATION": [],
 }
 

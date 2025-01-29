@@ -83,7 +83,7 @@ class UsersViewSet(GenericViewSet):
 
         return Response(status=status.HTTP_200_OK, data=data)
 
-    @action(methods=["GET"], url_path='apply-invitation', detail=False, permission_classes=[IsAuthenticated])
+    @action(methods=["POST"], url_path='apply-invitation', detail=False, permission_classes=[IsAuthenticated])
     def apply_invitation(self, request):
         serializer = UserInvitationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
