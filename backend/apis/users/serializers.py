@@ -4,34 +4,15 @@ from django.db.models import Prefetch
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, Serializer
 
-from apis.teams.serializers import UserTeamInputSerializer, TeamsSerializer
+from apis.teams.serializers import TeamsSerializer
 from apps.teams.models import UserTeam
 from apps.users.models import Friendship
 
 User = get_user_model()
 
 
-class UserSerializer(ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    email = serializers.EmailField(max_length=255)
-    nickname = serializers.CharField(max_length=255)
-    my_team_id = serializers.IntegerField(write_only=True)
-    my_team = serializers.SerializerMethodField()
-    profile_image = serializers.CharField()
-
-    class Meta:
-        model = User
-        fields = ["password", "email", "nickname", "my_team", "profile_image"]
-
-    def get_my_team(self, obj):
-        return obj
-
-    def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
-
-
 class UserSimpleSerializer(ModelSerializer):
-    nickname = serializers.CharField(max_length=255)
+    nickname = serializers.CharField()
     profile_image = serializers.CharField()
 
     class Meta:
@@ -39,15 +20,14 @@ class UserSimpleSerializer(ModelSerializer):
         fields = ["nickname", "profile_image"]
 
 
-class UserSignUpInputSerializer(Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField()
-    nickname = serializers.CharField()
-    my_team = serializers.IntegerField()
+class UserModifySerializer(Serializer):
+    nickname = serializers.CharField(max_length=255, required=False)
+    my_team = serializers.IntegerField(required=False)
+    profile_image = serializers.CharField(max_length=255, required=False)
 
 
 class UserInfoSerializer(Serializer):
-    nickname = serializers.CharField(max_length=255)
+    nickname = serializers.CharField()
     profile_image = serializers.SerializerMethodField()
     predict_ratio = serializers.SerializerMethodField()
     my_team = serializers.SerializerMethodField()
