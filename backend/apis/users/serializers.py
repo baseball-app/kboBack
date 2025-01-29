@@ -56,8 +56,9 @@ class UserInfoSerializer(Serializer):
         return 1
 
     def get_my_team(self, obj):
-        team = UserTeam.objects.get(user=obj).team
-        return team.id
+        team = UserTeam.objects.filter(user=obj).last()
+        team_id = team.id if team else 0
+        return team_id
 
     def get_followers(self, obj):
         return list(Friendship.objects.filter(target=obj).values_list('source_id', flat=True))

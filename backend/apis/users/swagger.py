@@ -1,4 +1,5 @@
-from drf_spectacular.utils import extend_schema, OpenApiParameter, inline_serializer
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter, inline_serializer, OpenApiExample
 from rest_framework import serializers
 
 SWAGGER_USERS_TAGS = ["users"]
@@ -35,10 +36,31 @@ BODY_PARAMETER_FOR_UNFOLLOW = inline_serializer(
     },
 )
 
+BODY_PARAMETER_FOR_APPLY_INVITATION = inline_serializer(
+    name="apply_invitation",
+    fields={
+        "code": serializers.CharField(),
+    },
+)
+
 SWAGGER_USERS_ME = extend_schema(
     tags=SWAGGER_USERS_TAGS,
     summary="내 정보 확인",
     description="내 정보를 확인 합니다.",
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            name="Success Example",
+            value={
+                "nickname": "nickname",
+                "predict_ratio": 1,
+                "my_team": 0,
+                "followers": [2],
+                "followings": [3, 4, 2]
+            },
+            response_only=True
+        )
+    ],
 )
 
 SWAGGER_USERS_LEAVE = extend_schema(
@@ -65,26 +87,55 @@ SWAGGER_USERS_FOLLOWERS = extend_schema(
     tags=SWAGGER_USERS_TAGS,
     summary="팔로워 조회",
     description="팔로워를 조회 합니다.",
-    request=BODY_PARAMETER_FOR_FOLLOW,
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            name="Success Example",
+            value={"followers": [{"nickname": "user1", "profile_image": ""}]},
+            response_only=True
+        )
+    ],
 )
 
 SWAGGER_USERS_FOLLOWINGS = extend_schema(
     tags=SWAGGER_USERS_TAGS,
     summary="팔로잉 조회",
     description="팔로잉 한 친구를 조회 합니다.",
-    request=BODY_PARAMETER_FOR_FOLLOW,
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            name="Success Example",
+            value={"followings": [{"nickname": "user1", "profile_image": ""}]},
+            response_only=True
+        )
+    ],
 )
 
 SWAGGER_USERS_INVITATION_CODE = extend_schema(
     tags=SWAGGER_USERS_TAGS,
     summary="친구 초대 코드 발급",
     description="친구 초대를 위한 초대 코드 발급",
-    request=BODY_PARAMETER_FOR_UNFOLLOW,
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            name="Success Example",
+            value={"code": "abcdefghijklmnopqrstuvwxyz="},
+            response_only=True
+        )
+    ],
 )
 
 SWAGGER_USERS_APPLY_INVITATION = extend_schema(
     tags=SWAGGER_USERS_TAGS,
     summary="친구 초대 코드 수락",
     description="전달 받은 친구 코드로 친구 수락",
-    request=BODY_PARAMETER_FOR_UNFOLLOW,
+    request=BODY_PARAMETER_FOR_APPLY_INVITATION,
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            name="Success Example",
+            value={"user_id": "1"},
+            response_only=True
+        )
+    ],
 )
