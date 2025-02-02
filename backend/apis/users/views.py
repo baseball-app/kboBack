@@ -5,12 +5,27 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from .serializers import UserInfoSerializer, UserFollowSerializer, UserInvitationSerializer, UserLeaveSerializer, \
-    UserFollowersSerializer, UserFollowingsSerializer, UserModifySerializer
+from .serializers import (
+    UserInfoSerializer,
+    UserFollowSerializer,
+    UserInvitationSerializer,
+    UserLeaveSerializer,
+    UserFollowersSerializer,
+    UserFollowingsSerializer,
+    UserModifySerializer,
+)
 from .services import UserFollowService, UserInvitationService, UserLeaveService, UserModifyService
-from .swagger import SWAGGER_USERS_ME, SWAGGER_USERS_FOLLOW, SWAGGER_USERS_UNFOLLOW, SWAGGER_USERS_LEAVE, \
-    SWAGGER_USERS_INVITATION_CODE, SWAGGER_USERS_APPLY_INVITATION, SWAGGER_USERS_FOLLOWERS, SWAGGER_USERS_FOLLOWINGS, \
-    SWAGGER_USERS_MODIFY
+from .swagger import (
+    SWAGGER_USERS_ME,
+    SWAGGER_USERS_FOLLOW,
+    SWAGGER_USERS_UNFOLLOW,
+    SWAGGER_USERS_LEAVE,
+    SWAGGER_USERS_INVITATION_CODE,
+    SWAGGER_USERS_APPLY_INVITATION,
+    SWAGGER_USERS_FOLLOWERS,
+    SWAGGER_USERS_FOLLOWINGS,
+    SWAGGER_USERS_MODIFY,
+)
 
 
 @extend_schema_view(
@@ -22,10 +37,9 @@ from .swagger import SWAGGER_USERS_ME, SWAGGER_USERS_FOLLOW, SWAGGER_USERS_UNFOL
     followers=SWAGGER_USERS_FOLLOWERS,
     followings=SWAGGER_USERS_FOLLOWINGS,
     invitation_code=SWAGGER_USERS_INVITATION_CODE,
-    apply_invitation=SWAGGER_USERS_APPLY_INVITATION
+    apply_invitation=SWAGGER_USERS_APPLY_INVITATION,
 )
 class UsersViewSet(GenericViewSet):
-
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
     def me(self, request):
         serializer = UserInfoSerializer(request.user)
@@ -49,7 +63,7 @@ class UsersViewSet(GenericViewSet):
         data = serializer.validated_data
 
         service = UserLeaveService()
-        service.leave(request.user.id, data.get('email'))
+        service.leave(request.user.id, data.get("email"))
 
         return Response(status=status.HTTP_200_OK)
 
@@ -85,18 +99,18 @@ class UsersViewSet(GenericViewSet):
         serializer = UserFollowingsSerializer(instance=request.user)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
-    @action(methods=["GET"], url_path='invitation-code', detail=False, permission_classes=[IsAuthenticated])
+    @action(methods=["GET"], url_path="invitation-code", detail=False, permission_classes=[IsAuthenticated])
     def invitation_code(self, request):
         service = UserInvitationService()
         code = service.generate_invite_code(request.user.id)
 
-        serializer = UserInvitationSerializer(data={'code': code})
+        serializer = UserInvitationSerializer(data={"code": code})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
         return Response(status=status.HTTP_200_OK, data=data)
 
-    @action(methods=["POST"], url_path='apply-invitation', detail=False, permission_classes=[IsAuthenticated])
+    @action(methods=["POST"], url_path="apply-invitation", detail=False, permission_classes=[IsAuthenticated])
     def apply_invitation(self, request):
         serializer = UserInvitationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

@@ -46,10 +46,10 @@ class UserInfoSerializer(Serializer):
         return TeamsSerializer(user_team.team).data if user_team else {}
 
     def get_followers(self, obj):
-        return len(Friendship.objects.filter(target=obj).values_list('source_id', flat=True))
+        return len(Friendship.objects.filter(target=obj).values_list("source_id", flat=True))
 
     def get_followings(self, obj):
-        return len(Friendship.objects.filter(source=obj).values_list('target_id', flat=True))
+        return len(Friendship.objects.filter(source=obj).values_list("target_id", flat=True))
 
 
 class UserLeaveSerializer(Serializer):
@@ -66,8 +66,9 @@ class UserFollowersSerializer(Serializer):
     followers = serializers.SerializerMethodField()
 
     def get_followers(self, obj):
-        friendships = (Friendship.objects.filter(target=obj)
-                       .prefetch_related(Prefetch('source', queryset=User.objects.all())))
+        friendships = Friendship.objects.filter(target=obj).prefetch_related(
+            Prefetch("source", queryset=User.objects.all())
+        )
         return UserSimpleSerializer([friendship.source for friendship in friendships], many=True).data
 
 
@@ -75,8 +76,9 @@ class UserFollowingsSerializer(Serializer):
     followings = serializers.SerializerMethodField()
 
     def get_followings(self, obj):
-        friendships = (Friendship.objects.filter(source=obj)
-                       .prefetch_related(Prefetch('target', queryset=User.objects.all())))
+        friendships = Friendship.objects.filter(source=obj).prefetch_related(
+            Prefetch("target", queryset=User.objects.all())
+        )
         return UserSimpleSerializer([friendship.target for friendship in friendships], many=True).data
 
 

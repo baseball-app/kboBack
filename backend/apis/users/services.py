@@ -26,13 +26,13 @@ class UserFollowService:
 class UserInvitationService:
     def generate_invite_code(self, user_id):
         unique_id = uuid.uuid4()
-        raw_code = f'{unique_id}:{user_id}'
+        raw_code = f"{unique_id}:{user_id}"
         encoded_code = base64.urlsafe_b64encode(raw_code.encode()).decode()
         return encoded_code
 
     def decode_invite_code(self, invite_code):
         decoded_code = base64.urlsafe_b64decode(invite_code).decode()
-        unique_id, user_id = decoded_code.split(':')
+        unique_id, user_id = decoded_code.split(":")
         return user_id
 
 

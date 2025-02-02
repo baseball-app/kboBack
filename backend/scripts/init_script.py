@@ -31,7 +31,7 @@ def make_auth():
         Application.objects.get(client_id=client_id)
     except Application.DoesNotExist:
         Application.objects.create(
-            name='dev',
+            name="dev",
             client_id=client_id,
             client_secret=client_secret,
             client_type=client_type,
@@ -50,11 +50,7 @@ def make_users():
 
     for user_data in users:
         User.objects.get_or_create(
-            email=user_data["email"],
-            defaults={
-                "nickname": user_data["nickname"],
-                "password": user_data["password"]
-            }
+            email=user_data["email"], defaults={"nickname": user_data["nickname"], "password": user_data["password"]}
         )
 
 
@@ -73,12 +69,7 @@ def make_teams():
     ]
 
     for team_data in teams:
-        Team.objects.get_or_create(
-            name=team_data["name"],
-            defaults={
-                "logo_url": team_data["logo_url"]
-            }
-        )
+        Team.objects.get_or_create(name=team_data["name"], defaults={"logo_url": team_data["logo_url"]})
 
 
 def make_user_team_relation():

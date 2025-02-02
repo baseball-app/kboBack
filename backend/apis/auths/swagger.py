@@ -6,15 +6,15 @@ SWAGGER_AUTHS_TAGS = ["auths"]
 BODY_PARAMETER_FOR_TOKEN = inline_serializer(
     name="code",
     fields={
-        'code': serializers.CharField(),
-        'state': serializers.CharField(),
+        "code": serializers.CharField(),
+        "state": serializers.CharField(),
     },
 )
 
 BODY_PARAMETER_REFRESH_TOKEN = inline_serializer(
     name="refresh_token",
     fields={
-        'refresh_token': serializers.CharField(),
+        "refresh_token": serializers.CharField(),
     },
     required=True,
 )

@@ -63,15 +63,11 @@ SWAGGER_USERS_ME = extend_schema(
             value={
                 "nickname": "nickname",
                 "predict_ratio": 1,
-                "my_team": {
-                    "id": 3,
-                    "name": "LG 트윈스",
-                    "logo_url": "https://image.com/"
-                },
+                "my_team": {"id": 3, "name": "LG 트윈스", "logo_url": "https://image.com/"},
                 "followers": 20,
-                "followings": 32
+                "followings": 32,
             },
-            response_only=True
+            response_only=True,
         )
     ],
 )
@@ -85,12 +81,8 @@ SWAGGER_USERS_MODIFY = extend_schema(
     examples=[
         OpenApiExample(
             name="Success Example",
-            value={
-                "nickname": "nickname",
-                "my_team": 1,
-                "profile_image": "profile_image"
-            },
-            response_only=True
+            value={"nickname": "nickname", "my_team": 1, "profile_image": "profile_image"},
+            response_only=True,
         )
     ],
 )
@@ -124,7 +116,7 @@ SWAGGER_USERS_FOLLOWERS = extend_schema(
         OpenApiExample(
             name="Success Example",
             value={"followers": [{"nickname": "user1", "profile_image": ""}]},
-            response_only=True
+            response_only=True,
         )
     ],
 )
@@ -138,7 +130,7 @@ SWAGGER_USERS_FOLLOWINGS = extend_schema(
         OpenApiExample(
             name="Success Example",
             value={"followings": [{"nickname": "user1", "profile_image": ""}]},
-            response_only=True
+            response_only=True,
         )
     ],
 )
@@ -149,11 +141,7 @@ SWAGGER_USERS_INVITATION_CODE = extend_schema(
     description="친구 초대를 위한 초대 코드 발급",
     responses={200: OpenApiTypes.OBJECT},
     examples=[
-        OpenApiExample(
-            name="Success Example",
-            value={"code": "abcdefghijklmnopqrstuvwxyz="},
-            response_only=True
-        )
+        OpenApiExample(name="Success Example", value={"code": "abcdefghijklmnopqrstuvwxyz="}, response_only=True)
     ],
 )
 
@@ -163,11 +151,5 @@ SWAGGER_USERS_APPLY_INVITATION = extend_schema(
     description="전달 받은 친구 코드로 친구 수락",
     request=BODY_PARAMETER_FOR_APPLY_INVITATION,
     responses={200: OpenApiTypes.OBJECT},
-    examples=[
-        OpenApiExample(
-            name="Success Example",
-            value={"user_id": "1"},
-            response_only=True
-        )
-    ],
+    examples=[OpenApiExample(name="Success Example", value={"user_id": "1"}, response_only=True)],
 )

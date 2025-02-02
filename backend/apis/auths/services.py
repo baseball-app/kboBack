@@ -35,7 +35,7 @@ class NaverAuthService(AuthService):
 
         # 신규 유저 생성
         with transaction.atomic():
-            user = User.objects.create(nickname=f'naver_{social_id}')
+            user = User.objects.create(nickname=f"naver_{social_id}")
             SocialInfo.objects.create(user=user, social_id=social_id, type=SocialTypeEnum.NAVER.value)
 
         return user, True
@@ -82,7 +82,7 @@ class KakaoAuthService(AuthService):
 
         # 신규 유저 생성
         with transaction.atomic():
-            user = User.objects.create(nickname=f'kakao_{social_id}')
+            user = User.objects.create(nickname=f"kakao_{social_id}")
             SocialInfo.objects.create(user=user, social_id=social_id, type=SocialTypeEnum.KAKAO.value)
 
         return user, True

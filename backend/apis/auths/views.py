@@ -24,12 +24,12 @@ User = get_user_model()
     login_test=extend_schema(exclude=True),
 )
 class AuthsViewSet(GenericViewSet):
-    @action(methods=["POST"], url_path='token-test', detail=False, permission_classes=[AllowAny])
+    @action(methods=["POST"], url_path="token-test", detail=False, permission_classes=[AllowAny])
     def token_test(self, request):
-        user = User.objects.filter(id=int(request.data.get('user_id'))).first()
+        user = User.objects.filter(id=int(request.data.get("user_id"))).first()
         return Response(issue_tokens(user), status=status.HTTP_200_OK)
 
-    @action(methods=["GET"], url_path='login-test', detail=False, permission_classes=[IsAuthenticated])
+    @action(methods=["GET"], url_path="login-test", detail=False, permission_classes=[IsAuthenticated])
     def login_test(self, request):
         return Response({"message": "success"}, status=status.HTTP_200_OK)
 
@@ -42,14 +42,13 @@ class AuthsViewSet(GenericViewSet):
         auth_service = NaverAuthService()
         social_user_info = auth_service.get_social_user(data=data)
         if not social_user_info:
-            raise ApiValidationError('Token is not valid')
+            raise ApiValidationError("Token is not valid")
 
         user, is_new_user = auth_service.auth_or_register(social_user_info)
         if not user:
-            raise ApiValidationError('User is not valid')
+            raise ApiValidationError("User is not valid")
 
-        return Response({"is_new_user": is_new_user, **issue_tokens(user)},
-                        status=status.HTTP_200_OK)
+        return Response({"is_new_user": is_new_user, **issue_tokens(user)}, status=status.HTTP_200_OK)
 
     @action(methods=["POST"], detail=False, permission_classes=[AllowAny])
     def kakao(self, request):
@@ -60,28 +59,27 @@ class AuthsViewSet(GenericViewSet):
         auth_service = KakaoAuthService()
         social_user_info = auth_service.get_social_user(data=data)
         if not social_user_info:
-            raise ApiValidationError('Token is not valid')
+            raise ApiValidationError("Token is not valid")
 
         user, is_new_user = auth_service.auth_or_register(social_user_info)
         if not user:
-            raise ApiValidationError('User is not valid')
+            raise ApiValidationError("User is not valid")
 
-        return Response({"is_new_user": is_new_user, **issue_tokens(user)},
-                        status=status.HTTP_200_OK)
+        return Response({"is_new_user": is_new_user, **issue_tokens(user)}, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], url_path='token/refresh', detail=False, permission_classes=[IsAuthenticated])
+    @action(methods=["POST"], url_path="token/refresh", detail=False, permission_classes=[IsAuthenticated])
     def token_refresh(self, request):
         serializer = TokenRefreshSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        reissued_token = reissue_tokens(request.user, data.get('refresh_token'))
+        reissued_token = reissue_tokens(request.user, data.get("refresh_token"))
         if not reissued_token:
             raise ApiValidationError("Invalid token")
 
         return Response(reissued_token, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], url_path='token/revoke', detail=False, permission_classes=[IsAuthenticated])
+    @action(methods=["POST"], url_path="token/revoke", detail=False, permission_classes=[IsAuthenticated])
     def token_revoke(self, request):
         user = request.user
         revoke_tokens(user)

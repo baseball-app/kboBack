@@ -13,7 +13,6 @@ from apis.uploads.swagger import SWAGGER_UPLOADS_PROFILE
     profile=SWAGGER_UPLOADS_PROFILE,
 )
 class UploadsViewSet(GenericViewSet):
-
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
     def profile(self, request):
         service = UploadProfileService()

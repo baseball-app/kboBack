@@ -20,18 +20,22 @@ class UploadProfileService:
             aws_secret_access_key=settings.AWS_S3_SECRET_KEY,
         )
 
-        file = request.FILES['file']
+        file = request.FILES["file"]
         image = Image.open(file)
 
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
+        if image.mode != "RGB":
+            image = image.convert("RGB")
 
         image_byte_array = BytesIO()
         image_resized = image.resize((110, 110))
-        image_resized.save(image_byte_array, format='JPEG', quality=50, optimize=True)
+        image_resized.save(image_byte_array, format="JPEG", quality=50, optimize=True)
         image_byte_array.seek(0)
 
-        s3.upload_fileobj(image_byte_array, settings.AWS_S3_STORAGE_BUCKET_NAME, file_key,
-                          ExtraArgs={"ContentType": file.content_type})
+        s3.upload_fileobj(
+            image_byte_array,
+            settings.AWS_S3_STORAGE_BUCKET_NAME,
+            file_key,
+            ExtraArgs={"ContentType": file.content_type},
+        )
 
         return file_key

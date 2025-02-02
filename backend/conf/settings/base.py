@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import toml
@@ -98,11 +99,11 @@ SPECTACULAR_SETTINGS = {
                 "type": "apiKey",
                 "name": "X-KBOAPP-TOKEN",
                 "in": "header",
-                'description': 'Custom authentication token for KBO App',
+                "description": "Custom authentication token for KBO App",
             }
         }
     },
-    'SECURITY': [{'X-KBOAPP-TOKEN': []}],
+    "SECURITY": [{"X-KBOAPP-TOKEN": []}],
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": True,
     "SERVE_AUTHENTICATION": [],
@@ -168,7 +169,23 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} {module} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "[{levelname}] {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "django.log"),
+            "formatter": "verbose",
+        },
         "console": {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
