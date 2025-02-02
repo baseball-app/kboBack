@@ -43,7 +43,7 @@ class UserLeaveService:
 
 class UserModifyService:
     def modify(self, user, validated_data):
-        update_fields = {k: v for k, v in validated_data.items() if k in ["nickname", "profile_image"] and v}
+        update_fields = {k: v for k, v in validated_data.items() if k in ["nickname", "profile_type"] and v}
 
         if update_fields:
             user.__dict__.update(update_fields)

@@ -12,22 +12,26 @@ User = get_user_model()
 
 
 class UserSimpleSerializer(ModelSerializer):
+    id = serializers.IntegerField()
     nickname = serializers.CharField()
+    profile_type = serializers.IntegerField()
     profile_image = serializers.CharField()
 
     class Meta:
         model = User
-        fields = ["nickname", "profile_image"]
+        fields = ["id", "nickname", "profile_type", "profile_image"]
 
 
 class UserModifySerializer(Serializer):
     nickname = serializers.CharField(max_length=255, required=False)
     my_team = serializers.IntegerField(required=False)
+    profile_type = serializers.IntegerField(required=False)
     profile_image = serializers.CharField(max_length=255, required=False)
 
 
 class UserInfoSerializer(Serializer):
     nickname = serializers.CharField()
+    profile_type = serializers.IntegerField()
     profile_image = serializers.SerializerMethodField()
     predict_ratio = serializers.SerializerMethodField()
     my_team = serializers.SerializerMethodField()
