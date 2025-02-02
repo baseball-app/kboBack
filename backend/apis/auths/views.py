@@ -42,11 +42,11 @@ class AuthsViewSet(GenericViewSet):
         auth_service = NaverAuthService()
         social_user_info = auth_service.get_social_user(data=data)
         if not social_user_info:
-            raise ApiValidationError(err_msg='Token is not valid')
+            raise ApiValidationError('Token is not valid')
 
         user, is_new_user = auth_service.auth_or_register(social_user_info)
         if not user:
-            raise ApiValidationError(err_msg='User is not valid')
+            raise ApiValidationError('User is not valid')
 
         return Response({"is_new_user": is_new_user, **issue_tokens(user)},
                         status=status.HTTP_200_OK)

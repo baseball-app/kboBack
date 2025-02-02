@@ -89,7 +89,7 @@ class KakaoAuthService(AuthService):
 
     def _get_access_token(self, data):
         grant_type = "authorization_code"
-        redirect_uri = "http://localhost:8000/auths/kakao/callback"
+        redirect_uri = f"{settings.DEFAULT_HOST}/auths/kakao/callback"
         client_id = settings.SOCIAL_LOGIN.get("KAKAO").get("CLIENT_ID")
         client_secret = settings.SOCIAL_LOGIN.get("KAKAO").get("CLIENT_SECRET")
         code = data.get("code")
