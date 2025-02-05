@@ -64,3 +64,9 @@ SWAGGER_TICKETS_REACTION = extend_schema(
     summary="직관 일기 반응 추가",
     description="직관 일기에 대한 반응을 추가합니다",
 )
+
+SWAGGER_WIN_RATE_CALCULATION = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="티켓 경기 결과 표출",
+    description="그동안 티켓들의 총 승,무,패 기록을 확인할 수 있습니다",
+)

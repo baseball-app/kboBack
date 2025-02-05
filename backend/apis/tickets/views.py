@@ -8,10 +8,11 @@ from rest_framework.viewsets import GenericViewSet
 from django.shortcuts import get_object_or_404
 
 from apis.tickets.serializers import TicketSerializer
-from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL
+from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION
 from apps.tickets.models import Ticket
 
 from .service import TicketReactionService
+from django.db.models import Count, Case, When, IntegerField
 
 @extend_schema_view(
     ticketAdd=SWAGGER_TICKETS_ADD,
@@ -21,6 +22,7 @@ from .service import TicketReactionService
     ticketDouAdd=SWAGGER_TICKETS_DOUBLE_ADD,
     ticketReaction=SWAGGER_TICKETS_REACTION,
     ticketDetail=SWAGGER_TICKETS_DETAIL,
+    winratecalculation=SWAGGER_WIN_RATE_CALCULATION,
 )
 
 class TicketsViewSet(
@@ -89,3 +91,16 @@ class TicketsViewSet(
         ticket.save()
         serializer = TicketSerializer(ticket)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 경기 결과 통계 추산
+    def winratecalculation(self, request):
+        user = request.user
+        queryset = Ticket.objects.filter(writer=user).aggregate(
+            win_count=Count(Case(When(result='승리', then=1), output_field=IntegerField())),
+            loss_count=Count(Case(When(result='패배', then=1), output_field=IntegerField())),
+            draw_count=Count(Case(When(result='무승부', then=1), output_field=IntegerField())),
+            cancel_count=Count(Case(When(result='취소', then=1), output_field=IntegerField())),
+        )
+        return Response(queryset)
+
+
