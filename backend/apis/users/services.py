@@ -3,7 +3,7 @@ import uuid
 
 from django.contrib.auth import get_user_model
 
-from apps.teams.models import UserTeam
+from apps.teams.models import UserTeam, Team
 from apps.users.models import Friendship
 
 User = get_user_model()
@@ -50,4 +50,10 @@ class UserModifyService:
             user.save(update_fields=update_fields.keys())
 
         if "my_team" in validated_data and validated_data["my_team"]:
-            UserTeam.objects.filter(user_id=user.id).update(team_id=validated_data["my_team"])
+            team = Team.objects.get(id=validated_data["my_team"])
+            if not team:
+                return
+
+            user_team, created = UserTeam.objects.get_or_create(team=team, user=user)
+            if not created:
+                user_team(team=team)
