@@ -56,12 +56,12 @@ SWAGGER_TICKETS_ADD = extend_schema(
     summary="직관 일기 추가",
     description="내 직관일기를 추가합니다.",
     request=TicketSerializer,
-    parameters=[],
     examples=[
         OpenApiExample(
             name="Example 1",
             summary="Example input",
-            description="티켓 일기 입력 예시입니다.",
+            description="티켓 일기 입력 예시입니다. \n ballpark값과 opponent 값은 경기 일정에서 request로 받아와야 하는 값 \n "
+                        "writer는 유저 인증값에서 가지고 와야 하는 값(현재 인증 해제)",
             value={
                 "date": "2025-04-09",
                 "result": "승리",
@@ -76,6 +76,8 @@ SWAGGER_TICKETS_ADD = extend_schema(
                 "is_homeballpark":True,
                 "writer": 1,
                 "only_me": True,
+                "ballpark": 1,
+                "opponent": 1,
             }
         )
     ],
@@ -85,14 +87,14 @@ SWAGGER_TICKETS_ADD = extend_schema(
 SWAGGER_TICKETS_DOUBLE_ADD = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 일기 추가(더블헤더)",
-    description="티켓 일기 입력 예시입니다.(일반 케이스와 동일)",
+    description="직관 일기 입력 예시입니다.(일반 케이스와 동일)",
     request=TicketSerializer,
-    parameters=[],
     examples=[
         OpenApiExample(
             name="Example 2",
             summary="Example input",
-            description="티켓 일기 입력 예시입니다.",
+            description="직관 일기(더블헤더) 입력 예시입니다. \n ballpark값과 opponent 값은 경기 일정에서 request로 받아와야 하는 값 \n "
+                        "writer는 유저 인증값에서 가지고 와야 하는 값(현재 인증 해제)",
             value={
                 "date": "2025-05-05",
                 "result": "패배",
@@ -106,6 +108,8 @@ SWAGGER_TICKETS_DOUBLE_ADD = extend_schema(
                 "memo": "재미없었다",
                 "is_homeballpark":True,
                 "only_me": False,
+                "ballpark": 1,
+                "opponent": 1,
             }
         )
     ],

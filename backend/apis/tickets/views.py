@@ -95,7 +95,8 @@ class TicketsViewSet(
             ballpark = Ballpark.objects.get(id=1)
             # opponent 값을 강제로 설정하여 저장합니다(games와 연계 이전).
             opponent = Game.objects.get(team_away_id=1)
-            serializer.save(ballpark=ballpark,opponent=opponent)
+            #serializer.save(ballpark=ballpark,opponent=opponent)
+            serializer.save()
             return Response(serializer.data)
         else:
             return Response(serializer.errors, status=400)
@@ -108,7 +109,8 @@ class TicketsViewSet(
             ballpark = Ballpark.objects.get(id=1)
             # opponent 값을 강제로 설정하여 저장합니다(games와 연계 이전).
             opponent = Game.objects.get(team_away_id=1)
-            serializer.save(ballpark=ballpark,opponent=opponent,is_double=True)
+            #serializer.save(ballpark=ballpark,opponent=opponent,is_double=True)
+            serializer.save()
             return Response(serializer.data)
         else:
             return Response(serializer.errors, status=400)
