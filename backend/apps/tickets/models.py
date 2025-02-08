@@ -57,3 +57,5 @@ class Ticket(models.Model):
 
     only_me = models.BooleanField(default=False)
     is_double = models.BooleanField(default=False)
+
+    favorite = models.BooleanField(default=False)

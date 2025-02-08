@@ -1,6 +1,6 @@
 from apps.tickets.models import Ticket
 
-class TicketReactionService:
+class TicketService:
     def add_reaction(self, ticket_id,reaction_type):
         try:
             ticket = Ticket.objects.get(id=ticket_id)
@@ -20,7 +20,7 @@ class TicketReactionService:
                 ticket.angry += 1
             ticket.save()
         except Ticket.DoesNotExist:
-            raise ValueError("반응 추가하고자 하는 티켓을 찾을 수 없습니다.")
+            raise ValueError("티켓을 찾을 수 없습니다.")
 
     def del_reaction(self, ticket_id,reaction_type):
         try:
@@ -41,5 +41,16 @@ class TicketReactionService:
                 ticket.angry -= 1
             ticket.save()
         except Ticket.DoesNotExist:
-            raise ValueError("반응 삭제하고자 하는 티켓을 찾을 수 없습니다.")
+            raise ValueError("티켓을 찾을 수 없습니다.")
+
+    def set_favorite(self, ticket_id,favorite_status):
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+            if favorite_status == "excute":
+                ticket.favorite = True
+            elif favorite_status == "clear":
+                ticket.favorite = False
+            ticket.save()
+        except Ticket.DoesNotExist:
+            raise ValueError("티켓을 찾을 수 없습니다.")
 

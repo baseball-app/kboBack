@@ -1,12 +1,15 @@
+from http.client import responses
+
 from drf_spectacular.utils import extend_schema, OpenApiParameter, inline_serializer, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import serializers
 
-from apis.tickets.serializers import TicketSerializer
+from apis.tickets.serializers import TicketSerializer, TicketFavoriteSerializer
 from apis.tickets.serializers import TicketListSerializer
 from apis.tickets.serializers import TicketUpdSerializer
 from apis.tickets.serializers import TicketReactionSerializer
 from apis.tickets.serializers import TicketDelSerializer
+from apis.tickets.serializers import TicketFavoriteSerializer
 
 SWAGGER_TICKETS_TAGS = ["tickets"]
 
@@ -14,7 +17,7 @@ QUERY_PARAMETER_LIST_TYPE = OpenApiParameter(
     name="team_id",
     type=str,
     location=OpenApiParameter.QUERY,
-    description="확인하고자 하는 team id를 입력시켜주세요",
+    description="확인하고자 하는 team id를 입력시켜주세요(return 값의 ballpark_id 와 동일)",
     required=False,
 )
 
@@ -26,12 +29,24 @@ QUERY_PARAMETER_DETAIL_TYPE = OpenApiParameter(
     required=False,
 )
 
+SWAGGER_TICKETS_FIND_FAVORITE = OpenApiParameter(
+    name="favorite",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="최애 경기를 확인하고 싶은 경우 해당 값에 True를 넣어주세요.",
+    default=True,
+    required=False,
+)
+
 SWAGGER_TICKETS_LIST = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 일기 조회",
     description="직관 일기 조회 목록 표출",
     request=TicketListSerializer,
-    parameters=[QUERY_PARAMETER_LIST_TYPE],
+    parameters=[
+        QUERY_PARAMETER_LIST_TYPE,
+        SWAGGER_TICKETS_FIND_FAVORITE,
+    ],
     responses={
         200: OpenApiExample(
             "Success Response", value=[], response_only=True, status_codes=["200"]
@@ -185,6 +200,25 @@ SWAGGER_TICKETS_REACTION = extend_schema(
             }
         ),
     ],
+)
+
+SWAGGER_TICKETS_FAVORITE = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="직관 최애 경기 선정 및 해제",
+    description="직관 일기 중 최애 경기를 추가하거나 해제할 수 있습니다",
+    request=TicketFavoriteSerializer,
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            name="Example 4",
+            summary="Example input",
+            description="favorite_status 값이 clear일경우 최애 경기 해제, excute일경우 최애 경기 선정",
+            value={
+                "id": 1,
+                "favorite_status": "excute",
+            }
+        ),
+    ]
 )
 
 SWAGGER_WIN_RATE_CALCULATION = extend_schema(

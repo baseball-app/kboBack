@@ -1,6 +1,6 @@
 from drf_spectacular.utils import extend_schema_view
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -14,12 +14,12 @@ from apis.tickets.serializers import TicketReactionSerializer
 from apis.games.serializers import BallparkSerializer
 from apis.games.serializers import GameSerializer
 
-from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION
+from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION, SWAGGER_TICKETS_FAVORITE
 from apps.tickets.models import Ticket
 from apps.games.models import Game
 from apps.games.models import Ballpark
 
-from .service import TicketReactionService
+from .service import TicketService
 from django.db.models import Count, Case, When, IntegerField
 
 @extend_schema_view(
@@ -30,6 +30,7 @@ from django.db.models import Count, Case, When, IntegerField
     ticket_dou_add=SWAGGER_TICKETS_DOUBLE_ADD,
     ticket_reaction=SWAGGER_TICKETS_REACTION,
     ticket_detail=SWAGGER_TICKETS_DETAIL,
+    ticket_favorite=SWAGGER_TICKETS_FAVORITE,
     win_rate_calculation=SWAGGER_WIN_RATE_CALCULATION,
 )
 
@@ -37,38 +38,28 @@ class TicketsViewSet(
     GenericViewSet,
 ):
 
-    @action(methods=["GET"], detail=False, permission_classes=[AllowAny])  # 티켓 일렬로 보기
+    @action(methods=["GET"], detail=False, permission_classes=[AllowAny])  # 직관 일기 리스트로 보기
     def ticket_list(self, request):
+        user = request.user
         queryset = Ticket.objects.all()
         team_id = self.request.query_params.get("team_id")
+        favorite = self.request.query_params.get("favorite")
 
-        if team_id:
-            try:  # team_id 선택 시
+        if team_id and favorite:
+            try:
+                queryset = queryset.filter(ballpark_id=team_id, favorite=True)
+            except ValueError:
+                pass  # 초기화면일 경우 전체 출력
+        elif team_id:
+            try:
                 queryset = queryset.filter(ballpark_id=team_id)
-            except ValueError:  # 초기화면일 경우 전체 출력
-                serializer = TicketListSerializer(queryset, many=True)  # 쿼리셋 직렬화
-                return Response(serializer.data)
-
-        queryset = Ticket.objects.values('id', 'date', 'writer_id', 'game_id', 'opponent_id', 'ballpark_id')
-
-        serializer = TicketListSerializer(queryset, many=True)  # 쿼리셋 직렬화
-        return Response(serializer.data)
-
-    #@action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 티켓 일렬로 보기(로그인 인증 버전)
-    def ticket_list_non_test(self, request):
-        user = request.user
-        queryset = Ticket.objects.filter(writer=user)
-
-        team_id = self.request.query_params.get("team_id")
-
-        if team_id:
-            try:  # team_id 선택 시
-                queryset = queryset.filter(ballpark_id=team_id)
-            except ValueError:  # 초기화면일 경우 전체 출력
-                serializer = TicketListSerializer(queryset, many=True)  # 쿼리셋 직렬화
-                return Response(serializer.data)
-
-        queryset = queryset.select_related("writer", "game", "opponent", "ballpark","id")
+            except ValueError:
+                pass  # 초기화면일 경우 전체 출력
+        elif favorite:
+            try:
+                queryset = queryset.filter(favorite=True)
+            except ValueError:
+                pass  # 초기화면일 경우 전체 출력
 
         serializer = TicketListSerializer(queryset, many=True)  # 쿼리셋 직렬화
         return Response(serializer.data)
@@ -153,7 +144,7 @@ class TicketsViewSet(
         reaction_pos = request.data.get("reaction_pos")
         reaction_type = request.data.get("reaction_type")
 
-        service = TicketReactionService()
+        service = TicketService()
 
         if reaction_pos == "add": # 반응 추가
             service.add_reaction(ticket_identifier,reaction_type)
@@ -166,6 +157,26 @@ class TicketsViewSet(
             'message': message,
             'ticket_id': ticket_identifier,
             'reaction_pos': reaction_pos
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    @action(methods=["POST"], detail=False, permission_classes=[AllowAny]) #최애경기 티켓 선정
+    def ticket_favorite(self, request):
+        try:
+            ticket_id = request.data.get('id')
+            favorite_status = request.data.get('favorite_status')
+        except KeyError:
+            return Response({"error": "요청 데이터에 'id'와 'set_favorite' 값이 필요합니다."}, status=400)
+
+        service = TicketService()
+        service.set_favorite(ticket_id,favorite_status)
+        message = "적용 성공"
+
+        response_data = {
+            'message': message,
+            'ticket_id': ticket_id,
+            'favorite_status': favorite_status
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
