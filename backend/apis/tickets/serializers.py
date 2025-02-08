@@ -24,3 +24,9 @@ class TicketUpdSerializer(serializers.ModelSerializer):
         fields = ['id','date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
                   'gip_place', 'image', 'food', 'memo', 'is_homeballpark','updated_at', 'ballpark_id',
                   'game_id', 'opponent_id', 'writer_id', 'only_me']
+
+# 반응용 Serialize
+class TicketReactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ticket
+        fields = ['id','like','love','haha','yay','wow','sad','angry']

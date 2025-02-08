@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from apis.tickets.serializers import TicketSerializer
 from apis.tickets.serializers import TicketListSerializer
 from apis.tickets.serializers import TicketUpdSerializer
+from apis.tickets.serializers import TicketReactionSerializer
 from apis.games.serializers import BallparkSerializer
 from apis.games.serializers import GameSerializer
 
@@ -135,21 +136,28 @@ class TicketsViewSet(
         ticket.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=["POST"], detail=False, permission_classes=[AllowAny]) #티켓에 반응 추가하기
-    def ticket_reaction(self, request, pk=None):
-        ticket = get_object_or_404(Ticket, pk=pk)
+    @action(methods=["POST"], detail=False, permission_classes=[AllowAny]) #티켓에 반응 추가/삭제하기
+    def ticket_reaction(self, request):
+        ticket_identifier = request.data.get('id')
         reaction_pos = request.data.get("reaction_pos")
+        reaction_type = request.data.get("reaction_type")
 
         service = TicketReactionService()
 
         if reaction_pos == "add": # 반응 추가
-            service.add_reaction(reaction_pos)
+            service.add_reaction(ticket_identifier,reaction_type)
+            message = "반응 추가 성공"
         elif reaction_pos == "del": # 반응 삭제
-            service.del_reaction(reaction_pos)
+            service.del_reaction(ticket_identifier,reaction_type)
+            message = "반응 삭제 성공"
 
-        ticket.save()
-        serializer = TicketSerializer(ticket)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        response_data = {
+            'message': message,
+            'ticket_id': ticket_identifier,
+            'reaction_pos': reaction_pos
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 경기 결과 통계 추산
     def win_rate_calculation(self, request):
