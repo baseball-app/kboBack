@@ -6,6 +6,7 @@ from apis.tickets.serializers import TicketSerializer
 from apis.tickets.serializers import TicketListSerializer
 from apis.tickets.serializers import TicketUpdSerializer
 from apis.tickets.serializers import TicketReactionSerializer
+from apis.tickets.serializers import TicketDelSerializer
 
 SWAGGER_TICKETS_TAGS = ["tickets"]
 
@@ -147,6 +148,18 @@ SWAGGER_TICKETS_DEL = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 일기 삭제",
     description="내 직관일기를 삭제합니다.",
+    request=TicketDelSerializer,
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            name="Example 1",
+            summary="Example input",
+            description="티켓 삭제 예시입니다",
+            value={
+                "id": 1,
+            }
+        ),
+    ],
 )
 
 SWAGGER_TICKETS_REACTION = extend_schema(

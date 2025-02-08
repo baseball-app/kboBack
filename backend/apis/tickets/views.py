@@ -130,11 +130,20 @@ class TicketsViewSet(
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(methods=["POST"], detail=False, permission_classes=[AllowAny])
+    @action(methods=["POST"], detail=False, permission_classes=[AllowAny]) # 티켓 삭제
     def ticket_del(self, request):
-        ticket = Ticket.objects.get(id=request.data['id'])
-        ticket.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        ticket_id = request.data.get('id')
+        if not ticket_id:
+            return Response({"error": "삭제하고자 하는 티켓 ID를 설정해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+            ticket.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Ticket.DoesNotExist:
+            return Response({"error": "해당 티켓을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(methods=["POST"], detail=False, permission_classes=[AllowAny]) #티켓에 반응 추가/삭제하기
     def ticket_reaction(self, request):

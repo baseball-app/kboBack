@@ -30,3 +30,9 @@ class TicketReactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = ['id','like','love','haha','yay','wow','sad','angry']
+
+# 삭제용 Serialize
+class TicketDelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ticket
+        fields = ['id']
