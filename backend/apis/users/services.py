@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 
 from apps.auths.models import SocialInfo
 from apps.teams.models import UserTeam, Team
+from apps.tickets.models import Ticket
 from apps.users.models import Friendship
 
 User = get_user_model()
@@ -62,4 +63,8 @@ class UserModifyService:
 
             user_team, created = UserTeam.objects.get_or_create(team=team, user=user)
             if not created:
-                user_team(team=team)
+                user_team.team = team
+                user_team.save()
+                user = user_team.user
+
+                Ticket.objects.filter(user=user).delete()
