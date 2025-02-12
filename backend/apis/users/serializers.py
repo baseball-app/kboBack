@@ -56,11 +56,6 @@ class UserInfoSerializer(Serializer):
         return len(Friendship.objects.filter(source=obj).values_list("target_id", flat=True))
 
 
-class UserLeaveSerializer(Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField()
-
-
 class UserFollowSerializer(Serializer):
     source_id = serializers.IntegerField(required=True)
     target_id = serializers.IntegerField(required=True)

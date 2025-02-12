@@ -3,6 +3,7 @@ import uuid
 
 from django.contrib.auth import get_user_model
 
+from apps.auths.models import SocialInfo
 from apps.teams.models import UserTeam, Team
 from apps.users.models import Friendship
 
@@ -37,8 +38,13 @@ class UserInvitationService:
 
 
 class UserLeaveService:
-    def leave(self, user_id, email):
-        User.objects.get(id=user_id, email=email).delete()
+    def leave(self, user_id):
+        user = User.objects.get(id=user_id)
+        SocialInfo.objects.filter(user_id=user_id).delete()
+        UserTeam.objects.filter(user_id=user_id).delete()
+        Friendship.objects.filter(source_id=user_id).delete()
+        Friendship.objects.filter(target_id=user_id).delete()
+        user.delete()
 
 
 class UserModifyService:

@@ -9,7 +9,6 @@ from .serializers import (
     UserInfoSerializer,
     UserFollowSerializer,
     UserInvitationSerializer,
-    UserLeaveSerializer,
     UserFollowersSerializer,
     UserFollowingsSerializer,
     UserModifySerializer,
@@ -58,12 +57,8 @@ class UsersViewSet(GenericViewSet):
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
     def leave(self, request):
-        serializer = UserLeaveSerializer(request.user)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-
         service = UserLeaveService()
-        service.leave(request.user.id, data.get("email"))
+        service.leave(request.user.id)
 
         return Response(status=status.HTTP_200_OK)
 
