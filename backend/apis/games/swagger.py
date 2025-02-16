@@ -1,5 +1,5 @@
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
-
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from apis.games.serializers import GameSerializer
 
 SWAGGER_GAMES_TAGS = ["GAMES"]
 
@@ -19,19 +19,6 @@ QUERY_PARAMETER_END_DATE = OpenApiParameter(
     required=False,
 )
 
-# Example Response for Swagger
-GAME_RESPONSE_EXAMPLE = {
-    "id": 1,
-    "team_home_info": {"id": 1, "name": "Home Team", "logo_url": "http://example.com/home-team-logo.png"},
-    "team_away_info": {"id": 2, "name": "Away Team", "logo_url": "http://example.com/away-team-logo.png"},
-    "ballpark_info": {
-        "id": 1,
-        "name": "Stadium Name",
-        "team_info": {"id": 1, "name": "Home Team", "logo_url": "http://example.com/home-team-logo.png"},
-    },
-    "game_date": "2025-01-22T14:00:00Z",
-}
-
 SWAGGER_GAMES_LIST = extend_schema(
     tags=SWAGGER_GAMES_TAGS,
     summary="경기 일정 목록 조회",
@@ -41,9 +28,5 @@ SWAGGER_GAMES_LIST = extend_schema(
         QUERY_PARAMETER_START_DATE,
         QUERY_PARAMETER_END_DATE,
     ],
-    responses={
-        200: OpenApiExample(
-            "Success Response", value=[GAME_RESPONSE_EXAMPLE], response_only=True, status_codes=["200"]
-        ),
-    },
+    responses={200: GameSerializer(many=True)},
 )
