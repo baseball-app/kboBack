@@ -1,4 +1,8 @@
+from django.db.migrations.exceptions import NodeNotFoundError
+
 from apps.tickets.models import Ticket
+from django.db.models.functions import ExtractWeekDay
+from django.db.models import Count
 
 class TicketService:
     def add_reaction(self, ticket_id,reaction_type):
@@ -53,4 +57,25 @@ class TicketService:
             ticket.save()
         except Ticket.DoesNotExist:
             raise ValueError("티켓을 찾을 수 없습니다.")
+
+    def calculate_weekday_wins(queryset):
+        week_win_count = (
+            queryset
+            .annotate(weekday=ExtractWeekDay('game__game_date'))
+            .values('weekday')
+            .annotate(win_count=Count('weekday'))
+            .order_by('-win_count')
+            .first()
+        )
+        return week_win_count['weekday'] if week_win_count else None
+
+    def calculate_most_win_ballpark(queryset):
+        ballpark_win_count = (
+            queryset
+            .values('game__ballpark')
+            .annotate(win_count=Count('game__ballpark'))
+            .order_by('-win_count')
+            .first()
+        )
+        return ballpark_win_count['game__ballpark'] if ballpark_win_count else None
 

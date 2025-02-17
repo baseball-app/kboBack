@@ -14,7 +14,7 @@ from apis.tickets.serializers import TicketReactionSerializer
 from apis.games.serializers import BallparkSerializer
 from apis.games.serializers import GameSerializer
 
-from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION, SWAGGER_TICKETS_FAVORITE
+from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION, SWAGGER_TICKETS_FAVORITE, SWAGGER_WEEKDAY_MOST_WIN, SWAGGER_BALLPARK_MOST_WIN
 from apps.tickets.models import Ticket
 from apps.games.models import Game
 from apps.games.models import Ballpark
@@ -32,6 +32,8 @@ from django.db.models import Count, Case, When, IntegerField
     ticket_detail=SWAGGER_TICKETS_DETAIL,
     ticket_favorite=SWAGGER_TICKETS_FAVORITE,
     win_rate_calculation=SWAGGER_WIN_RATE_CALCULATION,
+    weekday_most_win=SWAGGER_WEEKDAY_MOST_WIN,
+    ballpark_most_win=SWAGGER_BALLPARK_MOST_WIN,
 )
 
 class TicketsViewSet(
@@ -192,4 +194,23 @@ class TicketsViewSet(
         )
         return Response(queryset)
 
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 승리 많이 한 요일 산출
+    def weekday_most_win(self, request):
+        user = request.user
+        queryset = Ticket.objects.filter(writer=user, result="승리")
+
+        service = TicketService()
+        most_wins_day = service.calculate_weekday_wins(queryset)
+
+        return Response({'most_wins_day': most_wins_day})
+
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 승리 많이한 구장 산출
+    def ballpark_most_win(self, request):
+        user = request.user
+        queryset = Ticket.objects.filter(writer=user, result="승리")
+
+        service = TicketService()
+        most_wins_ballpark = service.calculate_most_win_ballpark(queryset)
+
+        return Response({"most_wins_ballpark" : most_wins_ballpark})
 

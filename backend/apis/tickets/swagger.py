@@ -229,3 +229,23 @@ SWAGGER_WIN_RATE_CALCULATION = extend_schema(
     examples=[
     ],
 )
+
+SWAGGER_WEEKDAY_MOST_WIN = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="최다 승리 요일 표출",
+    description="그동안 티켓들의 가장 승리가 많은 요일을 보여줍니다",
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+
+    ],
+)
+
+SWAGGER_BALLPARK_MOST_WIN = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="최다 승리 구장 표출",
+    description="그동안 티켓들의 가장 승리가 많은 구장을 보여줍니다",
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+
+    ],
+)
