@@ -20,6 +20,14 @@ QUERY_PARAMETER_PASSWORD = OpenApiParameter(
     required=False,
 )
 
+QUERY_PARAMETER_GAME_ID = OpenApiParameter(
+    name="game_id",
+    type=int,
+    location=OpenApiParameter.QUERY,
+    description="게임 ID",
+    required=False,
+)
+
 BODY_PARAMETER_FOR_MODIFY = inline_serializer(
     name="modify",
     fields={
@@ -91,6 +99,24 @@ SWAGGER_USERS_LEAVE = extend_schema(
     tags=SWAGGER_USERS_TAGS,
     summary="회원 탈퇴",
     description="회원에서 탈퇴 합니다.",
+)
+
+SWAGGER_USERS_FRIENDS = extend_schema(
+    tags=SWAGGER_USERS_TAGS,
+    summary="친구 조회",
+    description="친구 정보를 조회합니다. 티켓 정보 포함",
+    parameters=[
+        QUERY_PARAMETER_GAME_ID,
+    ],
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            name="Success Example",
+            value={"friends": [{"id": 1, "nickname": "abc", "profile_type": 0, "profile_image": "",
+                                "ticket_info": {"writer_id": 1, "game_id": 1}}]},
+            response_only=True,
+        )
+    ],
 )
 
 SWAGGER_USERS_FOLLOW = extend_schema(
