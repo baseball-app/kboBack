@@ -11,7 +11,7 @@ from .serializers import (
     UserInvitationSerializer,
     UserFollowersSerializer,
     UserFollowingsSerializer,
-    UserModifySerializer,
+    UserModifySerializer, UserFriendsSerializer,
 )
 from .services import UserFollowService, UserInvitationService, UserLeaveService, UserModifyService
 from .swagger import (
@@ -23,7 +23,7 @@ from .swagger import (
     SWAGGER_USERS_APPLY_INVITATION,
     SWAGGER_USERS_FOLLOWERS,
     SWAGGER_USERS_FOLLOWINGS,
-    SWAGGER_USERS_MODIFY,
+    SWAGGER_USERS_MODIFY, SWAGGER_USERS_FRIENDS,
 )
 
 
@@ -31,6 +31,7 @@ from .swagger import (
     me=SWAGGER_USERS_ME,
     modify=SWAGGER_USERS_MODIFY,
     leave=SWAGGER_USERS_LEAVE,
+    friends=SWAGGER_USERS_FRIENDS,
     follow=SWAGGER_USERS_FOLLOW,
     unfollow=SWAGGER_USERS_UNFOLLOW,
     followers=SWAGGER_USERS_FOLLOWERS,
@@ -61,6 +62,11 @@ class UsersViewSet(GenericViewSet):
         service.leave(request.user.id)
 
         return Response(status=status.HTTP_200_OK)
+
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
+    def friends(self, request):
+        serializer = UserFriendsSerializer(instance=request.user, context={"game_id": request.query_params.get("game_id")})
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
     def follow(self, request):

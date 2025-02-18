@@ -6,6 +6,7 @@ from rest_framework.serializers import ModelSerializer, Serializer
 
 from apis.teams.serializers import TeamsSerializer
 from apps.teams.models import UserTeam
+from apps.tickets.models import Ticket
 from apps.users.models import Friendship
 
 User = get_user_model()
@@ -54,6 +55,51 @@ class UserInfoSerializer(Serializer):
 
     def get_followings(self, obj):
         return len(Friendship.objects.filter(source=obj).values_list("target_id", flat=True))
+
+
+class UserTicketInfoSimpleSerializer(ModelSerializer):
+    class Meta:
+        model = Ticket
+        fields = ["writer_id", "game_id"]
+
+
+class UserTicketSerializer(ModelSerializer):
+    id = serializers.IntegerField()
+    nickname = serializers.CharField()
+    profile_type = serializers.IntegerField()
+    profile_image = serializers.CharField()
+    ticket_info = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "nickname", "profile_type", "profile_image", "ticket_info"]
+
+    def get_ticket_info(self, obj):
+        game_id = self.context.get("game_id")
+        if not game_id:
+            return {}
+        ticket_info = Ticket.objects.filter(writer=obj.id, game_id=game_id).last()
+        result = UserTicketInfoSimpleSerializer(ticket_info).data
+        return result
+
+
+class UserFriendsSerializer(Serializer):
+    friends = serializers.SerializerMethodField()
+
+    def get_friends(self, obj):
+        game_id = self.context.get("game_id")
+        user_queryset = User.objects.all()
+
+        if game_id:
+            user_queryset = User.objects.prefetch_related(
+                Prefetch("ticket_set", queryset=Ticket.objects.filter(game_id=game_id))
+            )
+
+        friends = Friendship.objects.filter(source=obj).prefetch_related(
+            Prefetch("target", queryset=user_queryset)
+        )
+
+        return UserTicketSerializer([friend.target for friend in friends], many=True, context={"game_id": game_id}).data
 
 
 class UserFollowSerializer(Serializer):
