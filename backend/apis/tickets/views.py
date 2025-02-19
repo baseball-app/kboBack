@@ -14,7 +14,7 @@ from apis.tickets.serializers import TicketReactionSerializer
 from apis.games.serializers import BallparkSerializer
 from apis.games.serializers import GameSerializer
 
-from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION, SWAGGER_TICKETS_FAVORITE, SWAGGER_WEEKDAY_MOST_WIN, SWAGGER_BALLPARK_MOST_WIN
+from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION, SWAGGER_TICKETS_FAVORITE, SWAGGER_WEEKDAY_MOST_WIN, SWAGGER_BALLPARK_MOST_WIN, SWAGGER_OPPONENT_MOST_WIN
 from apps.tickets.models import Ticket
 from apps.games.models import Game
 from apps.games.models import Ballpark
@@ -34,6 +34,7 @@ from django.db.models import Count, Case, When, IntegerField
     win_rate_calculation=SWAGGER_WIN_RATE_CALCULATION,
     weekday_most_win=SWAGGER_WEEKDAY_MOST_WIN,
     ballpark_most_win=SWAGGER_BALLPARK_MOST_WIN,
+    opponent_most_win=SWAGGER_OPPONENT_MOST_WIN,
 )
 
 class TicketsViewSet(
@@ -142,9 +143,20 @@ class TicketsViewSet(
 
     @action(methods=["POST"], detail=False, permission_classes=[AllowAny]) #티켓에 반응 추가/삭제하기
     def ticket_reaction(self, request):
+        user = request.user
         ticket_identifier = request.data.get('id')
         reaction_pos = request.data.get("reaction_pos")
         reaction_type = request.data.get("reaction_type")
+
+        # ticket_identifier에 해당하는 티켓 객체 조회
+        try:
+            ticket = Ticket.objects.get(id=ticket_identifier)
+        except Ticket.DoesNotExist:
+            return Response({'message': '티켓을 찾을 수 없습니다.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # 티켓의 작성자가 현재 id일 경우 service 접근 금지
+        if ticket.writer.id == user.id:
+            return Response({'message': '자신의 티켓에는 반응을 추가/삭제할 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
         service = TicketService()
 
@@ -154,6 +166,8 @@ class TicketsViewSet(
         elif reaction_pos == "del": # 반응 삭제
             service.del_reaction(ticket_identifier,reaction_type)
             message = "반응 삭제 성공"
+        else:
+            return Response({'message': '잘못된 요청입니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
         response_data = {
             'message': message,
@@ -213,4 +227,16 @@ class TicketsViewSet(
         most_wins_ballpark = service.calculate_most_win_ballpark(queryset)
 
         return Response({"most_wins_ballpark" : most_wins_ballpark})
+
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 상대로 승리 많이한 구단 산출
+    def opponent_most_win(self, request):
+        user = request.user
+        queryset = Ticket.objects.filter(writer=user, result="승리")
+
+        service = TicketService()
+        most_wins_opponent = service.calculate_most_win_opponent(queryset)
+
+        return Response({"most_wins_opponent" : most_wins_opponent})
+
+
 

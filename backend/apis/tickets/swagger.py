@@ -249,3 +249,13 @@ SWAGGER_BALLPARK_MOST_WIN = extend_schema(
 
     ],
 )
+
+SWAGGER_OPPONENT_MOST_WIN = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="최다 상대 승리 구단 표출",
+    description="그동안 티켓들의 가장 승리가 많은 상대 구단을 보여줍니다",
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+
+    ],
+)

@@ -79,3 +79,13 @@ class TicketService:
         )
         return ballpark_win_count['game__ballpark'] if ballpark_win_count else None
 
+    def calculate_most_win_opponent(queryset):
+        opponent_win_count = (
+            queryset
+            .values('game__opponent__ballpark_id')
+            .annotate(win_count=Count('game__opponent__ballpark_id'))
+            .order_by('-win_count')
+            .first()
+        )
+        return opponent_win_count['game__opponent__ballpark_id'] if opponent_win_count else None
+
