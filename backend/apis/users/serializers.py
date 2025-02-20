@@ -31,6 +31,7 @@ class UserModifySerializer(Serializer):
 
 
 class UserInfoSerializer(Serializer):
+    id = serializers.IntegerField()
     nickname = serializers.CharField()
     profile_type = serializers.IntegerField()
     profile_image = serializers.SerializerMethodField()
@@ -38,6 +39,9 @@ class UserInfoSerializer(Serializer):
     my_team = serializers.SerializerMethodField()
     followers = serializers.SerializerMethodField()
     followings = serializers.SerializerMethodField()
+
+    def get_id(self, obj):
+        return obj.id
 
     def get_profile_image(self, obj):
         return f"{settings.AWS_S3_CUSTOM_DOMAIN}{obj.profile_image}" if obj.profile_image else ""
