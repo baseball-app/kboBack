@@ -5,6 +5,7 @@ ignore = [
     "E402",
     "F841",
     "F811",
+    "C901",
 ]
 
 [tool.poetry]
