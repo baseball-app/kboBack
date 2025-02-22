@@ -15,7 +15,7 @@ class Game(TimeStampModel):
     team_home = models.ForeignKey("teams.Team", on_delete=models.DO_NOTHING, related_name="home_games")
     team_away = models.ForeignKey("teams.Team", on_delete=models.DO_NOTHING, related_name="away_games")
     ballpark = models.ForeignKey("games.Ballpark", on_delete=models.DO_NOTHING, related_name="games")
-    game_date = models.DateField()
+    game_date = models.DateTimeField()
 
     def __str__(self):
         return f"{self.game_date}: {self.team_home} vs {self.team_away}"
