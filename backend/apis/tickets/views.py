@@ -5,7 +5,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from django.shortcuts import get_object_or_404
 
 from apis.tickets.serializers import TicketSerializer
 from apis.tickets.serializers import TicketListSerializer
@@ -14,13 +13,19 @@ from apis.tickets.serializers import TicketReactionSerializer
 from apis.games.serializers import BallparkSerializer
 from apis.games.serializers import GameSerializer
 
-from apis.tickets.swagger import SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST, SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION, SWAGGER_TICKETS_FAVORITE, SWAGGER_WEEKDAY_MOST_WIN, SWAGGER_BALLPARK_MOST_WIN, SWAGGER_OPPONENT_MOST_WIN
+from apis.tickets.swagger import (SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST,
+                                  SWAGGER_TICKETS_DOUBLE_ADD, SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION, SWAGGER_TICKETS_FAVORITE,
+                                  SWAGGER_WEEKDAY_MOST_WIN, SWAGGER_BALLPARK_MOST_WIN, SWAGGER_OPPONENT_MOST_WIN, SWAGGER_LONGEST_WINNING_STREAK,
+                                  SWAGGER_WIN_SITE_PERCENT, SWAGGER_WIN_HOME_PERCENT)
 from apps.tickets.models import Ticket
 from apps.games.models import Game
 from apps.games.models import Ballpark
 
 from .service import TicketService
-from django.db.models import Count, Case, When, IntegerField
+from django.db.models import Count, Case, When, IntegerField, Max, F
+from django.db.models import Window
+
+from django.db.models.functions import Lag
 
 @extend_schema_view(
     ticket_add=SWAGGER_TICKETS_ADD,
@@ -35,6 +40,9 @@ from django.db.models import Count, Case, When, IntegerField
     weekday_most_win=SWAGGER_WEEKDAY_MOST_WIN,
     ballpark_most_win=SWAGGER_BALLPARK_MOST_WIN,
     opponent_most_win=SWAGGER_OPPONENT_MOST_WIN,
+    longest_winning_streak=SWAGGER_LONGEST_WINNING_STREAK,
+    win_site_percent=SWAGGER_WIN_SITE_PERCENT,
+    win_home_percent=SWAGGER_WIN_HOME_PERCENT,
 )
 
 class TicketsViewSet(
@@ -238,5 +246,57 @@ class TicketsViewSet(
 
         return Response({"most_wins_opponent" : most_wins_opponent})
 
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 긴 연승 기간 찾기
+    def longest_winning_streak(self, request):
+        user = request.user
 
+        #티켓 승리 내역 가져오기
+        queryset = Ticket.objects.filter(writer=user, result="승리").annotate(
+            prev_date=Window(
+                expression=Lag('date', 1),
+                partition_by=[F('writer')],
+                order_by=F('date').asc()
+            )
+        ).annotate(
+            streak=Case(
+                When(F('date') - F('prev_date') == 1, then=F('streak') + 1),
+                default=1,
+                output_field=IntegerField()
+            )
+        )
+
+        # 가장 긴 연승 기간 계산
+        max_streak = queryset.aggregate(max_streak=Max('streak'))['max_streak']
+
+        return Response({"longest_winning_streak": max_streak})
+
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 직관 경기 승률 퍼센티지 추산
+    def win_site_percent(self, request):
+        user = request.user
+        queryset = Ticket.objects.filter(writer=user, is_ballpark=True)
+
+        total_games = queryset.count()
+        wins = queryset.filter(result="승리").count()
+
+        if total_games == 0:
+            win_percent = 0
+        else:
+            win_percent = int((wins / total_games) * 100)
+
+        return Response(win_percent)
+
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
+    def win_home_percent(self, request):
+        user = request.user
+        queryset = Ticket.objects.filter(writer=user, is_ballpark=False)
+
+        total_games = queryset.count()
+        wins = queryset.filter(result="승리").count()
+
+        if total_games == 0:
+            win_percent = 0
+        else:
+            win_percent = int((wins / total_games) * 100)
+
+        return Response(win_percent)
 

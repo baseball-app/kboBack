@@ -259,3 +259,33 @@ SWAGGER_OPPONENT_MOST_WIN = extend_schema(
 
     ],
 )
+
+SWAGGER_LONGEST_WINNING_STREAK = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="가장 긴 연승구간 표출",
+    description="티켓 들중 연승구간이 가장 긴 횟수를 보여줍니다",
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+
+    ],
+)
+
+SWAGGER_WIN_SITE_PERCENT = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="직관 승률 표출",
+    description="직관으로 찍은 티켓의 총 승률을 계산합니다",
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+
+    ],
+)
+
+SWAGGER_WIN_HOME_PERCENT = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="집관 승률 표출",
+    description="집관으로 찍은 티켓의 총 승률을 계산합니다",
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+
+    ],
+)
