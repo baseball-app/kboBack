@@ -11,11 +11,11 @@ UNICODE_ASCII_CHARACTER_SET = "abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRST
 def issue_tokens(user):
     application = Application.objects.get(name="dev")
     scope = "read write"
-    expires_in = settings.DEFAULT_EXIRES_IN
+    expires_in = settings.DEFAULT_EXPIRES_IN
     token_type = "Bearer"
 
     # 토큰 만료 시점 생성
-    expires = timezone.now() + timedelta(seconds=settings.DEFAULT_EXIRES_IN)
+    expires = timezone.now() + timedelta(seconds=settings.DEFAULT_EXPIRES_IN)
 
     # 엑세스 토큰 생성
     access_token = AccessToken.objects.create(
