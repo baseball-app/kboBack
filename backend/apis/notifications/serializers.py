@@ -23,6 +23,7 @@ class NotificationSerializer(ModelSerializer):
             "id",
             "user",
             "user_info",
+            "ticket",
             "type",
             "is_read",
             "created_at",

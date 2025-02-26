@@ -19,7 +19,7 @@ class CustomHeaderAuthentication(BaseAuthentication):
 
         user = token.user
         if not user:
-            raise AuthenticationFailed('Invalid token')
+            raise AuthenticationFailed("Invalid token")
 
         return user, None
 

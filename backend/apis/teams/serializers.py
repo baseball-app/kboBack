@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from apps.teams.models import Team, UserTeam
+from apps.teams.models import Team
 
 
 class TeamsSerializer(ModelSerializer):
@@ -12,11 +12,3 @@ class TeamsSerializer(ModelSerializer):
     class Meta:
         model = Team
         fields = ["id", "name", "logo_url"]
-
-
-class UserTeamInputSerializer(ModelSerializer):
-    team_id = serializers.IntegerField(write_only=True)
-
-    class Meta:
-        model = UserTeam
-        fields = ["team_id"]

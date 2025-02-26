@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import toml
@@ -94,16 +95,17 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": f"{SITE_NAME}의 API입니다.",
     "APPEND_COMPONENTS": {
         "securitySchemes": {
-            "Bearer": {
+            "X-KBOAPP-TOKEN": {
                 "type": "apiKey",
-                "name": "Authorization",
+                "name": "X-KBOAPP-TOKEN",
                 "in": "header",
+                "description": "Custom authentication token for KBO App",
             }
         }
     },
-    "SECURITY": [{"Bearer": []}],
+    "SECURITY": [{"X-KBOAPP-TOKEN": []}],
     "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": False,
+    "SERVE_INCLUDE_SCHEMA": True,
     "SERVE_AUTHENTICATION": [],
 }
 
@@ -167,7 +169,23 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} {module} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "[{levelname}] {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "django.log"),
+            "formatter": "verbose",
+        },
         "console": {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
@@ -189,3 +207,12 @@ CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Seoul"
+
+# AWS
+AWS_S3_ACCESS_KEY = config["aws"].get("AWS_S3_ACCESS_KEY", "")
+AWS_S3_SECRET_KEY = config["aws"].get("AWS_S3_SECRET_KEY", "")
+AWS_S3_STORAGE_BUCKET_NAME = config["aws"].get("AWS_S3_STORAGE_BUCKET_NAME", "")
+AWS_S3_REGION_NAME = config["aws"].get("AWS_S3_REGION_NAME", "ap-northeast-2")
+AWS_S3_CUSTOM_DOMAIN = config["aws"].get("AWS_S3_CUSTOM_DOMAIN", "")
+
+DEFAULT_HOST = "http://localhost:8000"

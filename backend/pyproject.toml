@@ -5,6 +5,7 @@ ignore = [
     "E402",
     "F841",
     "F811",
+    "C901",
 ]
 
 [tool.poetry]
@@ -35,6 +36,8 @@ celery = "^5.4.0"
 redis = "^5.2.0"
 django-celery-beat = "^2.7.0"
 django-celery-results = "^2.5.1"
+boto3 = "^1.36.8"
+django-storages = "^1.14.4"
 
 
 [build-system]

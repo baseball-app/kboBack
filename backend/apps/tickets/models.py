@@ -46,3 +46,16 @@ class Ticket(models.Model):
     is_homeballpark = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    like = models.IntegerField(default=0)
+    love = models.IntegerField(default=0)
+    haha = models.IntegerField(default=0)
+    yay = models.IntegerField(default=0)
+    wow = models.IntegerField(default=0)
+    sad = models.IntegerField(default=0)
+    angry = models.IntegerField(default=0)
+
+    only_me = models.BooleanField(default=False)
+    is_double = models.BooleanField(default=False)
+
+    favorite = models.BooleanField(default=False)

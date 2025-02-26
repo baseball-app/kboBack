@@ -7,6 +7,9 @@ class Team(models.Model):
     name = models.CharField(max_length=30)
     logo_url = models.CharField(max_length=255)
 
+    def __str__(self):
+        return self.name
+
 
 class UserTeam(TimeStampModel):
     user = models.ForeignKey("users.User", related_name="user", on_delete=models.DO_NOTHING)
