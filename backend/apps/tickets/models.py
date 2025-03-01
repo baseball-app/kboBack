@@ -32,10 +32,10 @@ class Ticket(models.Model):
     score_our = models.IntegerField(default=0)
     score_opponent = models.IntegerField(default=0)
     opponent = models.ForeignKey(
-        "games.Game",
+        "teams.Team",
         on_delete=models.SET_NULL,
         null=True,
-        related_name="ticket_opponent",
+        related_name="ticket_team_away"
     )
     starting_pitchers = models.CharField(max_length=255)
     ballpark = models.ForeignKey("games.Ballpark", on_delete=models.SET_NULL, null=True)
@@ -59,3 +59,6 @@ class Ticket(models.Model):
     is_double = models.BooleanField(default=False)
 
     favorite = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.date} - {self.result} ({self.writer})"

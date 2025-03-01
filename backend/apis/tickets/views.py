@@ -27,6 +27,10 @@ from django.db.models import Window
 
 from django.db.models.functions import Lag
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 @extend_schema_view(
     ticket_add=SWAGGER_TICKETS_ADD,
     ticket_upd=SWAGGER_TICKETS_UPD,
@@ -91,31 +95,29 @@ class TicketsViewSet(
 
     @action(methods=["POST"], detail=False, permission_classes=[AllowAny]) #일반 스케줄 시 등록 경우
     def ticket_add(self, request):
-        serializer = TicketSerializer(data=request.data)
-        if serializer.is_valid():
-            # ballpark 값을 강제로 설정하여 저장합니다(games와 연계 이전).
-            ballpark = Ballpark.objects.get(id=1)
-            # opponent 값을 강제로 설정하여 저장합니다(games와 연계 이전).
-            opponent = Game.objects.get(team_away_id=1)
-            #serializer.save(ballpark=ballpark,opponent=opponent)
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=400)
+        try:
+            serializer = TicketSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=400)
+        except Exception as e:
+            logger.error(f"Error occurred in ticket_add: {e}")
+            return Response({'error': str(e)}, status=500)
 
     @action(methods=["POST"], detail=False, permission_classes=[AllowAny]) # 더블헤더 진행 시 등록 경우
     def ticket_dou_add(self, request):
-        serializer = TicketSerializer(data=request.data)
-        if serializer.is_valid():
-            # ballpark 값을 강제로 설정하여 저장합니다(games와 연계 이전).
-            ballpark = Ballpark.objects.get(id=1)
-            # opponent 값을 강제로 설정하여 저장합니다(games와 연계 이전).
-            opponent = Game.objects.get(team_away_id=1)
-            #serializer.save(ballpark=ballpark,opponent=opponent,is_double=True)
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=400)
+        try:
+            serializer = TicketSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=400)
+        except Exception as e:
+            logger.error(f"Error occurred in ticket_add: {e}")
+            return Response({'error': str(e)}, status=500)
 
     @action(methods=["POST"], detail=False, permission_classes=[AllowAny]) # 티켓 일기 수정하기
     def ticket_upd(self, request):

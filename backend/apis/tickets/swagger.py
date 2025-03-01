@@ -75,10 +75,12 @@ SWAGGER_TICKETS_ADD = extend_schema(
         OpenApiExample(
             name="Example 1",
             summary="Example input",
-            description="티켓 일기 입력 예시입니다. \n ballpark값과 opponent 값은 경기 일정에서 request로 받아와야 하는 값 \n "
-                        "writer는 유저 인증값에서 가지고 와야 하는 값(현재 인증 해제)",
+            description="티켓 일기 입력 예시입니다. \n "
+                        "request로 받아와야 하는 값"
+                        "game_id -> game , ballpark_id -> ballpark , team_away_id -> opponent",
             value={
                 "date": "2025-04-09",
+                "game": 624,
                 "result": "승리",
                 "weather": "흐림",
                 "is_ballpark": True,
@@ -91,8 +93,8 @@ SWAGGER_TICKETS_ADD = extend_schema(
                 "is_homeballpark":True,
                 "writer": 1,
                 "only_me": True,
-                "ballpark": 1,
-                "opponent": 1,
+                "ballpark": 7,
+                "opponent": 9,
             }
         )
     ],
