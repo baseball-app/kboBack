@@ -52,20 +52,26 @@ class AuthsViewSet(GenericViewSet):
 
     @action(methods=["POST"], detail=False, permission_classes=[AllowAny])
     def kakao(self, request):
-        serializer = KakaoInputSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
+        try:
+            serializer = KakaoInputSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            data = serializer.validated_data
 
-        auth_service = KakaoAuthService()
-        social_user_info = auth_service.get_social_user(data=data)
-        if not social_user_info:
-            raise ApiValidationError("Token is not valid")
+            auth_service = KakaoAuthService()
+            social_user_info = auth_service.get_social_user(data=data)
+            if not social_user_info:
+                raise ApiValidationError("Token is not valid")
 
-        user, is_new_user = auth_service.auth_or_register(social_user_info)
-        if not user:
-            raise ApiValidationError("User is not valid")
+            user, is_new_user = auth_service.auth_or_register(social_user_info)
+            if not user:
+                raise ApiValidationError("User is not valid")
 
-        return Response({"is_new_user": is_new_user, **issue_tokens(user)}, status=status.HTTP_200_OK)
+            return Response({"is_new_user": is_new_user, **issue_tokens(user)}, status=status.HTTP_200_OK)
+        except ApiValidationError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": "Internal Server Error", "error": str(e)},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(methods=["POST"], url_path="token/refresh", detail=False, permission_classes=[IsAuthenticated])
     def token_refresh(self, request):

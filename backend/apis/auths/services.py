@@ -6,6 +6,10 @@ from apps.auths.chocies import SocialTypeEnum
 from apps.auths.models import SocialInfo
 from apps.users.models import User
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class AuthService:
     def _get_access_token(self, data):
@@ -64,28 +68,37 @@ class NaverAuthService(AuthService):
 
 class KakaoAuthService(AuthService):
     def get_social_user(self, data):
-        access_token = self._get_access_token(data)
-        if not access_token:
+        try:
+            access_token = self._get_access_token(data)
+            if not access_token:
+                return None
+            return self._get_user_info(access_token)
+        except Exception as e:
+            logger.error(f"Failed to get social user info: {str(e)}")
             return None
-        return self._get_user_info(access_token)
 
     def auth_or_register(self, social_user_info):
-        social_id = social_user_info["id"]
+        try:
+            social_id = social_user_info["id"]
 
-        # 기존 유저 조회
-        social_info = SocialInfo.objects.filter(social_id=social_id).last()
-        if social_info:
-            user = User.objects.filter(id=social_info.user_id).last()
-            if not user:
-                return None, None
-            return user, False
+            # 기존 유저 조회
+            social_info = SocialInfo.objects.filter(social_id=social_id).last()
+            if social_info:
+                user = User.objects.filter(id=social_info.user_id).last()
+                if not user:
+                    return None, None
+                return user, False
 
-        # 신규 유저 생성
-        with transaction.atomic():
-            user = User.objects.create(nickname=f"kakao_{social_id}")
-            SocialInfo.objects.create(user=user, social_id=social_id, type=SocialTypeEnum.KAKAO.value)
+            # 신규 유저 생성
+            with transaction.atomic():
+                user = User.objects.create(nickname=f"kakao_{social_id}")
+                SocialInfo.objects.create(user=user, social_id=social_id, type=SocialTypeEnum.KAKAO.value)
 
-        return user, True
+            return user, True
+        except Exception as e:
+            logger.error(f"Failed to authenticate or register user: {str(e)}")
+            return None, None
+
 
     def _get_access_token(self, data):
         grant_type = "authorization_code"

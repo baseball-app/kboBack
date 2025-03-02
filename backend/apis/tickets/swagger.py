@@ -74,7 +74,6 @@ SWAGGER_TICKETS_ADD = extend_schema(
         "multipart/form-data": {
             "type": "object",
             "properties": {
-                "date": {"type": "string"},
                 "game": {"type": "integer"},
                 "result": {"type": "string"},
                 "weather": {"type": "string"},
@@ -87,9 +86,6 @@ SWAGGER_TICKETS_ADD = extend_schema(
                 "food": {"type": "string"},
                 "memo": {"type": "string"},
                 "is_homeballpark": {"type": "boolean"},
-                "writer": {"type": "integer"},
-                "ballpark": {"type": "integer"},
-                "opponent": {"type": "integer"},
                 "only_me": {"type": "boolean"},
                 "is_double": {"type": "boolean"},
             }
@@ -97,13 +93,12 @@ SWAGGER_TICKETS_ADD = extend_schema(
     },
     examples=[
         OpenApiExample(
-            name="Example 1",
+            name="Example",
             summary="Example input",
-            description="티켓 일기 입력 예시입니다. \n "
-                        "request로 받아와야 하는 값"
-                        "game_id -> game , ballpark_id -> ballpark , team_away_id -> opponent",
+            description="직관 일기 입력 예시입니다. \n "
+                        "경기일정에서 받아와야 하는 값"
+                        "game_id -> game",
             value={
-                "date": "2025-04-09",
                 "game": 624,
                 "result": "승리",
                 "weather": "흐림",
@@ -116,9 +111,6 @@ SWAGGER_TICKETS_ADD = extend_schema(
                 "food": "닭강정",
                 "memo": "재미있었다",
                 "is_homeballpark":True,
-                "writer": 1,
-                "ballpark": 7,
-                "opponent": 9,
                 "only_me": False,
                 "is_double": False,
             }
@@ -223,6 +215,17 @@ SWAGGER_WIN_RATE_CALCULATION = extend_schema(
     description="그동안 티켓들의 총 승,무,패 기록을 확인할 수 있습니다",
     responses={200: OpenApiTypes.OBJECT},
     examples=[
+        OpenApiExample(
+            name="Example 4",
+            summary="Example input",
+            description="승리 횟수, 패배 횟수, 무승부 횟수, 취소 횟수를 int로 출력합니다",
+            value={
+              "win_count": 2,
+              "loss_count": 0,
+              "draw_count": 0,
+              "cancel_count": 0
+            }
+        ),
     ],
 )
 
@@ -272,7 +275,14 @@ SWAGGER_WIN_SITE_PERCENT = extend_schema(
     description="직관으로 찍은 티켓의 총 승률을 계산합니다",
     responses={200: OpenApiTypes.OBJECT},
     examples=[
-
+        OpenApiExample(
+            name="Example",
+            summary="Example input",
+            description="승률 계산하여 퍼센티지 숫자로 출력 (% 기호는 제외)",
+            value={
+                50
+            }
+        ),
     ],
 )
 

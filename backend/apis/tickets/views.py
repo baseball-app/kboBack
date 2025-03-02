@@ -16,6 +16,7 @@ from apis.tickets.swagger import (SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAG
                                   SWAGGER_WEEKDAY_MOST_WIN, SWAGGER_BALLPARK_MOST_WIN, SWAGGER_OPPONENT_MOST_WIN, SWAGGER_LONGEST_WINNING_STREAK,
                                   SWAGGER_WIN_SITE_PERCENT, SWAGGER_WIN_HOME_PERCENT)
 from apps.tickets.models import Ticket
+from apps.games.models import Game
 
 from .service import TicketService
 from django.db.models import Count, Case, When, IntegerField, Max, F
@@ -56,21 +57,26 @@ class TicketsViewSet(
             team_id = self.request.query_params.get("team_id")
             favorite = self.request.query_params.get("favorite")
 
-            if team_id and favorite:
+            if team_id: # 팀 확인 시
                 try:
-                    queryset = queryset.filter(ballpark_id=team_id, favorite=True)
+                    if favorite == 'true': # 최애 경기 보고 싶을 경우
+                        queryset = queryset.filter(ballpark_id=team_id, favorite=True, writer=user)
+                    elif favorite == 'false':
+                        queryset = queryset.filter(ballpark_id=team_id, favorite=False, writer=user)
+                    else:
+                        queryset = queryset.filter(ballpark_id=team_id, writer=user)
                 except ValueError:
-                    pass  # 초기화면일 경우 전체 출력
-            elif team_id:
+                    pass
+            else: # 팀 미확인 시
                 try:
-                    queryset = queryset.filter(ballpark_id=team_id)
+                    if favorite == 'true':
+                        queryset = queryset.filter(favorite=True, writer=user)
+                    elif favorite == 'false':
+                        queryset = queryset.filter(favorite=False, writer=user)
+                    else:
+                        queryset = queryset.filter(writer=user)
                 except ValueError:
-                    pass  # 초기화면일 경우 전체 출력
-            elif favorite:
-                try:
-                    queryset = queryset.filter(favorite=True)
-                except ValueError:
-                    pass  # 초기화면일 경우 전체 출력
+                    pass
 
             serializer = TicketListSerializer(queryset, many=True)  # 쿼리셋 직렬화
             return Response(serializer.data)
@@ -92,14 +98,25 @@ class TicketsViewSet(
         serializer = TicketSerializer(ticket)  # 티켓 직렬화
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], detail=False, permission_classes=[AllowAny]) #일반 스케줄 시 등록 경우
+    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
     def ticket_add(self, request):
-        #user = request.user
+        user = request.user
         try:
-            serializer = TicketAddSerializer(data=request.data, context={'request': request})
+            game_id = request.data.get('game')
+            try:
+                game = Game.objects.get(id=game_id)
+                date = game.game_date
+                ballpark_id = game.ballpark.id
+                opponent_id = game.team_away.id
+            except Game.DoesNotExist:
+                return Response({'error': 'Invalid game ID'}, status=400)
+
+            data = request.data.copy()
+            data['game'] = game_id
+
+            serializer = TicketAddSerializer(data=data, context={'request': request})
             if serializer.is_valid():
-                serializer.save()
-                #serializer.save(writer=user)
+                serializer.save(writer=user,ballpark=ballpark_id,opponent=opponent_id,date=date)
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors, status=400)
@@ -221,7 +238,7 @@ class TicketsViewSet(
 
         return Response({'most_wins_day': most_wins_day})
 
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 승리 많이한 구장 산출
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 승리 많이한 구장 산출
     def ballpark_most_win(self, request):
         user = request.user
         queryset = Ticket.objects.filter(writer=user, result="승리")
@@ -229,7 +246,7 @@ class TicketsViewSet(
         service = TicketService()
         most_wins_ballpark = service.calculate_most_win_ballpark(queryset)
 
-        return Response({"most_wins_ballpark" : most_wins_ballpark})
+        return Response({"most_wins_ballpark": most_wins_ballpark})
 
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 상대로 승리 많이한 구단 산출
     def opponent_most_win(self, request):
@@ -280,7 +297,7 @@ class TicketsViewSet(
 
         return Response(win_percent)
 
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 집관 경기 승률 퍼센티지 추산
     def win_home_percent(self, request):
         user = request.user
         queryset = Ticket.objects.filter(writer=user, is_ballpark=False)

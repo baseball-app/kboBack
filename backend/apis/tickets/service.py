@@ -1,6 +1,7 @@
 from django.db.migrations.exceptions import NodeNotFoundError
 
 from apps.tickets.models import Ticket
+from apps.games.models import Ballpark
 from django.db.models.functions import ExtractWeekDay
 from django.db.models import Count
 
@@ -69,7 +70,7 @@ class TicketService:
         except Ticket.DoesNotExist:
             raise ValueError("티켓을 찾을 수 없습니다.")
 
-    def calculate_weekday_wins(queryset):
+    def calculate_weekday_wins(self, queryset):
         week_win_count = (
             queryset
             .annotate(weekday=ExtractWeekDay('game__game_date'))
@@ -80,7 +81,7 @@ class TicketService:
         )
         return week_win_count['weekday'] if week_win_count else None
 
-    def calculate_most_win_ballpark(queryset):
+    def calculate_most_win_ballpark(self, queryset):
         ballpark_win_count = (
             queryset
             .values('game__ballpark')
@@ -88,9 +89,19 @@ class TicketService:
             .order_by('-win_count')
             .first()
         )
-        return ballpark_win_count['game__ballpark'] if ballpark_win_count else None
 
-    def calculate_most_win_opponent(queryset):
+        if ballpark_win_count:
+            ballpark_id = ballpark_win_count['game__ballpark']
+            try:
+                # `ballpark_id`의 이름을 조회
+                ballpark_name = Ballpark.objects.get(id=ballpark_id).name
+                return ballpark_name
+            except Ballpark.DoesNotExist:
+                return None
+
+        return None
+
+    def calculate_most_win_opponent(self,queryset):
         opponent_win_count = (
             queryset
             .values('game__opponent__ballpark_id')
@@ -101,7 +112,8 @@ class TicketService:
         return opponent_win_count['game__opponent__ballpark_id'] if opponent_win_count else None
 
 
-    def upload_to_s3(self, image, user_id):
+    @staticmethod
+    def upload_to_s3(image, user_id):
         logger.info(f"user_id: {user_id}")
         current_date = datetime.now().strftime("%Y%m%d")
         unique_id = base64.urlsafe_b64encode(uuid.uuid4().bytes).decode("utf-8").rstrip("=")
@@ -109,8 +121,8 @@ class TicketService:
 
         s3 = boto3.client(
             "s3",
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            aws_access_key_id=settings.AWS_S3_ACCESS_KEY,
+            aws_secret_access_key=settings.AWS_S3_SECRET_KEY,
         )
 
         img = Image.open(image)
@@ -130,6 +142,6 @@ class TicketService:
             ExtraArgs={"ContentType": image.content_type},
         )
 
-        return f"https://{settings.AWS_S3_CUSTOM_DOMAIN}/{file_key}"
+        return f"{settings.AWS_S3_CUSTOM_DOMAIN}/{file_key}"
 
 

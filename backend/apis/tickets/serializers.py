@@ -3,6 +3,8 @@ from rest_framework.serializers import ModelSerializer
 
 from apis.tickets.service import TicketService
 from apps.tickets.models import Ticket
+from apps.games.models import Ballpark
+
 
 from rest_framework import serializers
 import logging
@@ -18,30 +20,64 @@ class TicketSerializer(serializers.ModelSerializer):
                   'game', 'opponent', 'writer', 'like', 'love', 'haha', 'yay', 'wow', 'sad', 'angry','only_me', 'is_double', 'favorite']
 
 # 리스트용 Serialize
+class BallparkSerializer(serializers.ModelSerializer):
+    team_id = serializers.PrimaryKeyRelatedField(source='team.id', read_only=True)
+
+    class Meta:
+        model = Ballpark
+        fields = ['id', 'name', 'team_id']
+
 class TicketListSerializer(serializers.ModelSerializer):
+    ballpark = BallparkSerializer(read_only=True)
+
     class Meta:
         model = Ticket
-        fields = ['id', 'date', 'writer_id', 'game_id', 'opponent_id','ballpark_id','favorite']
+        fields = ['id', 'date', 'writer_id', 'game_id', 'opponent_id', 'ballpark', 'favorite']
 
-# 등록용 Serialize
+# 등록용 Serializer
 class TicketAddSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(write_only=True, required=False)
+    writer = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Ticket
-        fields = ['id', 'date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
+        fields = ['id', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
                   'gip_place', 'image', 'food', 'memo', 'is_homeballpark', 'created_at', 'updated_at', 'ballpark',
                   'game', 'opponent', 'writer', 'only_me', 'is_double', 'favorite']
 
     def create(self, validated_data):
-        user_id = validated_data.get('writer')
+        request = self.context.get('request')
+        user = request.user
         image = validated_data.pop('image', None)
-        ticket = Ticket.objects.create(**validated_data)
-        if image:
-            image_url = TicketService.upload_to_s3(image, user_id)
-            ticket.image_url = image_url  # 모델에 image_url 필드가 있어야 합니다
-            ticket.save()
-        return ticket
+        date = validated_data.pop('date', None)
+        game_id = validated_data.pop('game', None)
+
+        ballpark_id = validated_data.pop('ballpark', None)
+        opponent_id = validated_data.pop('opponent', None)
+
+        try:
+            ticket = Ticket.objects.create(
+                date=date,
+                writer_id=user.id,
+                game=game_id,
+                ballpark_id=ballpark_id,
+                opponent_id=opponent_id,
+                **validated_data
+            )
+
+            logger.debug(f"Ticket created: {user.id}")
+
+            if image:
+                image_url = TicketService.upload_to_s3(image, user.id)
+                ticket.image = image_url
+                ticket.save()
+                logger.debug(f"Image uploaded and ticket saved: {ticket}")
+
+            return ticket
+
+        except Exception as e:
+            logger.error(f"Error occurred in TicketAddSerializer: {e}")
+            raise serializers.ValidationError(f"An error occurred while creating the ticket: {e}")
 
 # 수정용 Serialize
 class TicketUpdSerializer(serializers.ModelSerializer):

@@ -38,7 +38,7 @@ class Ticket(models.Model):
         related_name="ticket_team_away"
     )
     starting_pitchers = models.CharField(max_length=255)
-    ballpark = models.ForeignKey("games.Ballpark", on_delete=models.SET_NULL, null=True)
+    ballpark = models.ForeignKey("games.Ballpark", on_delete=models.SET_NULL, null=True, related_name="ticket_ballpark")
     gip_place = models.CharField(max_length=255, null=True, blank=True)
     image = models.ImageField(upload_to="images/", null=True, blank=True)
     food = models.CharField(max_length=255, null=True, blank=True)
