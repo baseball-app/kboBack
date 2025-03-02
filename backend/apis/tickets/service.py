@@ -4,6 +4,17 @@ from apps.tickets.models import Ticket
 from django.db.models.functions import ExtractWeekDay
 from django.db.models import Count
 
+import logging
+import base64
+import uuid
+from datetime import datetime
+from io import BytesIO
+import boto3
+from PIL import Image
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
 class TicketService:
     def add_reaction(self, ticket_id,reaction_type):
         try:
@@ -88,4 +99,37 @@ class TicketService:
             .first()
         )
         return opponent_win_count['game__opponent__ballpark_id'] if opponent_win_count else None
+
+
+    def upload_to_s3(self, image, user_id):
+        logger.info(f"user_id: {user_id}")
+        current_date = datetime.now().strftime("%Y%m%d")
+        unique_id = base64.urlsafe_b64encode(uuid.uuid4().bytes).decode("utf-8").rstrip("=")
+        file_key = f"{user_id}/{current_date}_{unique_id}"
+
+        s3 = boto3.client(
+            "s3",
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
+
+        img = Image.open(image)
+
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+
+        image_byte_array = BytesIO()
+        img_resized = img.resize((110, 110))
+        img_resized.save(image_byte_array, format="JPEG", quality=50, optimize=True)
+        image_byte_array.seek(0)
+
+        s3.upload_fileobj(
+            image_byte_array,
+            settings.AWS_S3_STORAGE_BUCKET_NAME,
+            file_key,
+            ExtraArgs={"ContentType": image.content_type},
+        )
+
+        return f"https://{settings.AWS_S3_CUSTOM_DOMAIN}/{file_key}"
+
 

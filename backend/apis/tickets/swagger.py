@@ -4,7 +4,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, inline_serial
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import serializers
 
-from apis.tickets.serializers import TicketSerializer, TicketFavoriteSerializer
+from apis.tickets.serializers import TicketSerializer
 from apis.tickets.serializers import TicketListSerializer
 from apis.tickets.serializers import TicketUpdSerializer
 from apis.tickets.serializers import TicketReactionSerializer
@@ -68,9 +68,33 @@ SWAGGER_TICKETS_DETAIL = extend_schema(
 
 SWAGGER_TICKETS_ADD = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
-    summary="직관 일기 추가",
-    description="내 직관일기를 추가합니다.",
-    request=TicketSerializer,
+    summary="직관 일기 등록",
+    description="내 직관일기를 등록합니다.",
+    request={
+        "multipart/form-data": {
+            "type": "object",
+            "properties": {
+                "date": {"type": "string"},
+                "game": {"type": "integer"},
+                "result": {"type": "string"},
+                "weather": {"type": "string"},
+                "is_ballpark": {"type": "boolean"},
+                "score_our": {"type": "integer"},
+                "score_opponent": {"type": "integer"},
+                "starting_pitchers": {"type": "string"},
+                "gip_place": {"type": "string"},
+                "image": {"type": "string", "format": "binary"},
+                "food": {"type": "string"},
+                "memo": {"type": "string"},
+                "is_homeballpark": {"type": "boolean"},
+                "writer": {"type": "integer"},
+                "ballpark": {"type": "integer"},
+                "opponent": {"type": "integer"},
+                "only_me": {"type": "boolean"},
+                "is_double": {"type": "boolean"},
+            }
+        }
+    },
     examples=[
         OpenApiExample(
             name="Example 1",
@@ -88,18 +112,21 @@ SWAGGER_TICKETS_ADD = extend_schema(
                 "score_opponent":6,
                 "starting_pitchers": "고우석",
                 "gip_place": "",
+                "image": "",
                 "food": "닭강정",
                 "memo": "재미있었다",
                 "is_homeballpark":True,
                 "writer": 1,
-                "only_me": True,
                 "ballpark": 7,
                 "opponent": 9,
+                "only_me": False,
+                "is_double": False,
             }
         )
     ],
     responses={200: OpenApiTypes.OBJECT},
 )
+
 
 SWAGGER_TICKETS_UPD = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,

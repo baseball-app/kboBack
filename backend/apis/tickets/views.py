@@ -9,6 +9,7 @@ from rest_framework.viewsets import GenericViewSet
 from apis.tickets.serializers import TicketSerializer
 from apis.tickets.serializers import TicketListSerializer
 from apis.tickets.serializers import TicketUpdSerializer
+from apis.tickets.serializers import TicketAddSerializer
 
 from apis.tickets.swagger import (SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST,
                                   SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION, SWAGGER_TICKETS_FAVORITE,
@@ -49,29 +50,34 @@ class TicketsViewSet(
 
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 직관 일기 리스트로 보기
     def ticket_list(self, request):
-        user = request.user
-        queryset = Ticket.objects.all()
-        team_id = self.request.query_params.get("team_id")
-        favorite = self.request.query_params.get("favorite")
+        try:
+            user = request.user
+            queryset = Ticket.objects.all()
+            team_id = self.request.query_params.get("team_id")
+            favorite = self.request.query_params.get("favorite")
 
-        if team_id and favorite:
-            try:
-                queryset = queryset.filter(ballpark_id=team_id, favorite=True)
-            except ValueError:
-                pass  # 초기화면일 경우 전체 출력
-        elif team_id:
-            try:
-                queryset = queryset.filter(ballpark_id=team_id)
-            except ValueError:
-                pass  # 초기화면일 경우 전체 출력
-        elif favorite:
-            try:
-                queryset = queryset.filter(favorite=True)
-            except ValueError:
-                pass  # 초기화면일 경우 전체 출력
+            if team_id and favorite:
+                try:
+                    queryset = queryset.filter(ballpark_id=team_id, favorite=True)
+                except ValueError:
+                    pass  # 초기화면일 경우 전체 출력
+            elif team_id:
+                try:
+                    queryset = queryset.filter(ballpark_id=team_id)
+                except ValueError:
+                    pass  # 초기화면일 경우 전체 출력
+            elif favorite:
+                try:
+                    queryset = queryset.filter(favorite=True)
+                except ValueError:
+                    pass  # 초기화면일 경우 전체 출력
 
-        serializer = TicketListSerializer(queryset, many=True)  # 쿼리셋 직렬화
-        return Response(serializer.data)
+            serializer = TicketListSerializer(queryset, many=True)  # 쿼리셋 직렬화
+            return Response(serializer.data)
+
+        except Exception as e:
+            logger.error(f"Error occurred in ticket_list: {e}")
+            return Response({'error': str(e)}, status=500)
 
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 티켓 상세 보기
     def ticket_detail(self, request):
@@ -80,19 +86,20 @@ class TicketsViewSet(
         if not ticket_id:
             return Response({"detail": "ID parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            ticket = Ticket.objects.get(id=ticket_id,writer=user.id)  # 해당 ID의 티켓 객체 가져오기
+            ticket = Ticket.objects.get(id=ticket_id,writer=user)  # 해당 ID의 티켓 객체 가져오기
         except Ticket.DoesNotExist:
             return Response({"detail": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = TicketSerializer(ticket)  # 티켓 직렬화
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated]) #일반 스케줄 시 등록 경우
+    @action(methods=["POST"], detail=False, permission_classes=[AllowAny]) #일반 스케줄 시 등록 경우
     def ticket_add(self, request):
-        user = request.user
+        #user = request.user
         try:
-            serializer = TicketSerializer(data=request.data)
+            serializer = TicketAddSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
-                serializer.save(writer=user.id)
+                serializer.save()
+                #serializer.save(writer=user)
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors, status=400)
