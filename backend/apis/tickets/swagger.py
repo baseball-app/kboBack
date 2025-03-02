@@ -101,38 +101,6 @@ SWAGGER_TICKETS_ADD = extend_schema(
     responses={200: OpenApiTypes.OBJECT},
 )
 
-SWAGGER_TICKETS_DOUBLE_ADD = extend_schema(
-    tags=SWAGGER_TICKETS_TAGS,
-    summary="직관 일기 추가(더블헤더)",
-    description="직관 일기 입력 예시입니다.(일반 케이스와 동일)",
-    request=TicketSerializer,
-    examples=[
-        OpenApiExample(
-            name="Example 2",
-            summary="Example input",
-            description="직관 일기(더블헤더) 입력 예시입니다. \n ballpark값과 opponent 값은 경기 일정에서 request로 받아와야 하는 값 \n "
-                        "writer는 유저 인증값에서 가지고 와야 하는 값(현재 인증 해제)",
-            value={
-                "date": "2025-05-05",
-                "result": "패배",
-                "weather": "바람",
-                "is_ballpark": True,
-                "score_our":1,
-                "score_opponent":7,
-                "starting_pitchers": "박세웅",
-                "gip_place": "",
-                "food": "치킨",
-                "memo": "재미없었다",
-                "is_homeballpark":True,
-                "only_me": False,
-                "ballpark": 1,
-                "opponent": 1,
-            }
-        )
-    ],
-    responses={200: OpenApiTypes.OBJECT},
-)
-
 SWAGGER_TICKETS_UPD = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 일기 수정",
@@ -147,17 +115,16 @@ SWAGGER_TICKETS_UPD = extend_schema(
             description="티켓 일기 입력(수정) 예시입니다.",
             value={
                 "id":1,
-                "result": "승리",
-                "weather": "흐림",
+                "result": "패배",
+                "weather": "맑음",
                 "is_ballpark": True,
-                "score_our":9,
-                "score_opponent":6,
-                "starting_pitchers": "고우석",
+                "score_our":2,
+                "score_opponent":7,
+                "starting_pitchers": "김광현",
                 "gip_place": "",
                 "food": "닭강정",
                 "memo": "재미있었다",
                 "is_homeballpark":True,
-                "writer": 1,
                 "only_me": True,
             }
         )
