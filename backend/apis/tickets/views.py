@@ -19,12 +19,13 @@ from apps.tickets.models import Ticket
 from apps.games.models import Game
 
 from .service import TicketService
-from django.db.models import Count, Case, When, IntegerField, Max, F
+from django.db.models import Count, Case, When, IntegerField, Max, F, Q
 from django.db.models import Window
 
-from django.db.models.functions import Lag
+from django.db.models.functions import Lag, ExtractDay
 
 import logging
+import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +91,7 @@ class TicketsViewSet(
         user = request.user
         ticket_id = request.query_params.get('id')
         if not ticket_id:
-            return Response({"detail": "ID parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "티켓id값이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
         try:
             ticket = Ticket.objects.get(id=ticket_id,writer=user)  # 해당 ID의 티켓 객체 가져오기
         except Ticket.DoesNotExist:
@@ -136,12 +137,12 @@ class TicketsViewSet(
             except Ticket.DoesNotExist:
                 return Response({"detail": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)
 
-            serializer = TicketUpdSerializer(ticket, data=request.data, partial=True)
+            serializer = TicketAddSerializer(ticket, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.data, status=200)
             else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=400)
 
         except Exception as e:
             return Response({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -258,27 +259,32 @@ class TicketsViewSet(
 
         return Response({"most_wins_opponent" : most_wins_opponent})
 
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 긴 연승 기간 찾기
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 긴 연승 기간 찾기
     def longest_winning_streak(self, request):
         user = request.user
 
-        #티켓 승리 내역 가져오기
+        # 티켓 승리 내역 가져오기
         queryset = Ticket.objects.filter(writer=user, result="승리").annotate(
             prev_date=Window(
                 expression=Lag('date', 1),
                 partition_by=[F('writer')],
                 order_by=F('date').asc()
             )
-        ).annotate(
-            streak=Case(
-                When(F('date') - F('prev_date') == 1, then=F('streak') + 1),
-                default=1,
-                output_field=IntegerField()
-            )
-        )
+        ).order_by('date')
 
         # 가장 긴 연승 기간 계산
-        max_streak = queryset.aggregate(max_streak=Max('streak'))['max_streak']
+        max_streak = 0
+        current_streak = 0
+        prev_date = None
+
+        for ticket in queryset:
+            if prev_date and ticket.date == prev_date + datetime.timedelta(days=1):
+                current_streak += 1
+            else:
+                current_streak = 1
+            if current_streak > max_streak:
+                max_streak = current_streak
+            prev_date = ticket.date
 
         return Response({"longest_winning_streak": max_streak})
 

@@ -2,6 +2,7 @@ from django.db.migrations.exceptions import NodeNotFoundError
 
 from apps.tickets.models import Ticket
 from apps.games.models import Ballpark
+from apps.teams.models import Team
 from django.db.models.functions import ExtractWeekDay
 from django.db.models import Count
 
@@ -101,16 +102,23 @@ class TicketService:
 
         return None
 
-    def calculate_most_win_opponent(self,queryset):
+    def calculate_most_win_opponent(self, queryset):
         opponent_win_count = (
             queryset
-            .values('game__opponent__ballpark_id')
-            .annotate(win_count=Count('game__opponent__ballpark_id'))
+            .values('game__team_away_id')
+            .annotate(win_count=Count('game__team_away_id'))
             .order_by('-win_count')
             .first()
         )
-        return opponent_win_count['game__opponent__ballpark_id'] if opponent_win_count else None
 
+        if opponent_win_count:
+            opponent_id = opponent_win_count['game__team_away_id']
+            try:
+                # 'opponent_id'의 팀 명을 조회
+                opponent_name = Team.objects.get(id=opponent_id).name
+                return opponent_name
+            except Team.DoesNotExist:
+                return None
 
     @staticmethod
     def upload_to_s3(image, user_id):

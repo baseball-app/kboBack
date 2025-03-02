@@ -65,14 +65,10 @@ class TicketAddSerializer(serializers.ModelSerializer):
                 **validated_data
             )
 
-            logger.debug(f"Ticket created: {user.id}")
-
             if image:
                 image_url = TicketService.upload_to_s3(image, user.id)
                 ticket.image = image_url
                 ticket.save()
-                logger.debug(f"Image uploaded and ticket saved: {ticket}")
-
             return ticket
 
         except Exception as e:
@@ -84,8 +80,25 @@ class TicketUpdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket  # 여기서 Ticket 모델을 지정합니다.
         fields = ['id','date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
-                  'gip_place', 'image', 'food', 'memo', 'is_homeballpark','updated_at', 'ballpark_id',
-                  'game_id', 'opponent_id', 'writer_id', 'only_me']
+                  'gip_place', 'image', 'food', 'memo', 'is_homeballpark','updated_at', 'writer_id', 'only_me']
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        user = request.user
+        image = validated_data.pop('image', None)
+
+        try:
+            ticket = Ticket.objects.create(**validated_data)
+
+            if image:
+                image_url = TicketService.upload_to_s3(image, user.id)
+                ticket.image = image_url
+                ticket.save()
+            return ticket
+
+        except Exception as e:
+            logger.error(f"Error occurred in TicketUpdSerializer: {e}")
+            raise serializers.ValidationError(f"An error occurred while creating the ticket: {e}")
 
 # 반응용 Serialize
 class TicketReactionSerializer(serializers.ModelSerializer):

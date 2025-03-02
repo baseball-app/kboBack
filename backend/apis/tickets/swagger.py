@@ -124,27 +124,47 @@ SWAGGER_TICKETS_UPD = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 일기 수정",
     description="내 직관일기를 수정합니다.",
-    request=TicketUpdSerializer,
-    parameters=[
-    ],
+    request={
+        "multipart/form-data": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "result": {"type": "string"},
+                "weather": {"type": "string"},
+                "is_ballpark": {"type": "boolean"},
+                "score_our": {"type": "integer"},
+                "score_opponent": {"type": "integer"},
+                "starting_pitchers": {"type": "string"},
+                "gip_place": {"type": "string"},
+                "image": {"type": "string", "format": "binary"},
+                "food": {"type": "string"},
+                "memo": {"type": "string"},
+                "is_homeballpark": {"type": "boolean"},
+                "only_me": {"type": "boolean"},
+                "is_double": {"type": "boolean"},
+            }
+        }
+    },
     examples=[
         OpenApiExample(
-            name="Example 1",
+            name="Example",
             summary="Example input",
             description="티켓 일기 입력(수정) 예시입니다.",
             value={
                 "id":1,
                 "result": "패배",
                 "weather": "맑음",
-                "is_ballpark": True,
+                "is_ballpark": False,
                 "score_our":2,
                 "score_opponent":7,
                 "starting_pitchers": "김광현",
-                "gip_place": "",
-                "food": "닭강정",
-                "memo": "재미있었다",
-                "is_homeballpark":True,
+                "gip_place": "제 집이요",
+                "image": "",
+                "food": "피자",
+                "memo": "재미없었다",
+                "is_homeballpark":False,
                 "only_me": True,
+                "is_double": True,
             }
         )
     ],
@@ -245,7 +265,12 @@ SWAGGER_BALLPARK_MOST_WIN = extend_schema(
     description="그동안 티켓들의 가장 승리가 많은 구장을 보여줍니다",
     responses={200: OpenApiTypes.OBJECT},
     examples=[
-
+        OpenApiExample(
+            name="Example",
+            summary="Example input",
+            description="승리 티켓 확인하여 가장 승리가 많은 구장 명 출력",
+            value={"most_wins_ballpark": "창원NC파크"}
+        ),
     ],
 )
 
@@ -255,7 +280,12 @@ SWAGGER_OPPONENT_MOST_WIN = extend_schema(
     description="그동안 티켓들의 가장 승리가 많은 상대 구단을 보여줍니다",
     responses={200: OpenApiTypes.OBJECT},
     examples=[
-
+        OpenApiExample(
+            name="Example",
+            summary="Example input",
+            description="승리 티켓 확인하여 가장 상대방으로 승리가 많은 팀 명 출력",
+            value={"most_wins_opponent": "롯데 자이언츠"}
+        ),
     ],
 )
 
@@ -265,7 +295,12 @@ SWAGGER_LONGEST_WINNING_STREAK = extend_schema(
     description="티켓 들중 연승구간이 가장 긴 횟수를 보여줍니다",
     responses={200: OpenApiTypes.OBJECT},
     examples=[
-
+        OpenApiExample(
+            name="Example",
+            summary="Example input",
+            description="연승기간 계산하여 숫자로 출력",
+            value={2}
+        ),
     ],
 )
 
@@ -279,9 +314,7 @@ SWAGGER_WIN_SITE_PERCENT = extend_schema(
             name="Example",
             summary="Example input",
             description="승률 계산하여 퍼센티지 숫자로 출력 (% 기호는 제외)",
-            value={
-                50
-            }
+            value={50}
         ),
     ],
 )
@@ -292,6 +325,11 @@ SWAGGER_WIN_HOME_PERCENT = extend_schema(
     description="집관으로 찍은 티켓의 총 승률을 계산합니다",
     responses={200: OpenApiTypes.OBJECT},
     examples=[
-
+        OpenApiExample(
+            name="Example",
+            summary="Example input",
+            description="승률 계산하여 퍼센티지 숫자로 출력 (% 기호는 제외)",
+            value={50}
+        ),
     ],
 )
