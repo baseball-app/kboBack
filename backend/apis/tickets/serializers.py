@@ -4,12 +4,28 @@ from rest_framework.serializers import ModelSerializer
 from apis.tickets.service import TicketService
 from apps.tickets.models import Ticket
 from apps.games.models import Ballpark
+from apps.teams.models import Team
 
 
 from rest_framework import serializers
 import logging
 
 logger = logging.getLogger(__name__)
+
+# 참조용 Serialize
+class BallparkSerializer(serializers.ModelSerializer):
+    team_id = serializers.PrimaryKeyRelatedField(source='team.id', read_only=True)
+
+    class Meta:
+        model = Ballpark
+        fields = ['id', 'name', 'team_id']
+
+
+class OpponentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Team
+        fields = ['id', 'name']
 
 # 상세용 Serialize
 class TicketSerializer(serializers.ModelSerializer):
@@ -20,12 +36,6 @@ class TicketSerializer(serializers.ModelSerializer):
                   'game', 'opponent', 'writer', 'like', 'love', 'haha', 'yay', 'wow', 'sad', 'angry','only_me', 'is_double', 'favorite']
 
 # 리스트용 Serialize
-class BallparkSerializer(serializers.ModelSerializer):
-    team_id = serializers.PrimaryKeyRelatedField(source='team.id', read_only=True)
-
-    class Meta:
-        model = Ballpark
-        fields = ['id', 'name', 'team_id']
 
 class TicketListSerializer(serializers.ModelSerializer):
     ballpark = BallparkSerializer(read_only=True)
@@ -110,7 +120,18 @@ class TicketDelSerializer(serializers.ModelSerializer):
         model = Ticket
         fields = ['id']
 
+# 최애경기 선정용 Serialize
 class TicketFavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = ['id','favorite']
+
+# 월 별 직관일기 목록용 Serialize
+class TicketCalendarSerializer(serializers.ModelSerializer):
+    ballpark = BallparkSerializer(read_only=True)
+    opponent = OpponentSerializer(read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = ['id','date', 'result', 'writer_id','game_id','opponent','ballpark']
+

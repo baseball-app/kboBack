@@ -335,3 +335,46 @@ SWAGGER_WIN_HOME_PERCENT = extend_schema(
         ),
     ],
 )
+
+QUERY_PARAMETER_CALENDAR_TYPE = OpenApiParameter(
+    name="date",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="확인하고자 하는 달을 입력해주세요(YYYY-MM)",
+    required=False,
+)
+
+SWAGGER_TICKETS_CALENDAR_LOG = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="해당하는 달의 직관 일기 내역 노출",
+    description="선택한 달의 직관 일기 내역을 노출합니다",
+    responses={200: OpenApiTypes.OBJECT},
+    request=TicketSerializer,
+    parameters=[
+        QUERY_PARAMETER_CALENDAR_TYPE,
+    ],
+    examples=[
+        OpenApiExample(
+            name="Example",
+            summary="Example input",
+            description="opponent는 홈구장 기준 상대편 ballpark는 홈구장 기준 본인기준입니다",
+            value={
+                "id": 25,
+                "date": "2024-08-20",
+                "result": "승리",
+                "writer_id": 2,
+                "game_id": 622,
+                "opponent": {
+                    "id": 6,
+                    "name": "SSG 랜더스"
+                },
+                "ballpark": {
+                    "id": 5,
+                    "name": "수원 케이티 위즈 파크",
+                    "team_id": 5
+                }
+            },
+        ),
+    ],
+)
+

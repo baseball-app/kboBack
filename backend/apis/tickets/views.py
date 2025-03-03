@@ -1,6 +1,6 @@
 from drf_spectacular.utils import extend_schema_view
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -10,11 +10,12 @@ from apis.tickets.serializers import TicketSerializer
 from apis.tickets.serializers import TicketListSerializer
 from apis.tickets.serializers import TicketUpdSerializer
 from apis.tickets.serializers import TicketAddSerializer
+from apis.tickets.serializers import TicketCalendarSerializer
 
 from apis.tickets.swagger import (SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST,
                                   SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION, SWAGGER_TICKETS_FAVORITE,
                                   SWAGGER_WEEKDAY_MOST_WIN, SWAGGER_BALLPARK_MOST_WIN, SWAGGER_OPPONENT_MOST_WIN, SWAGGER_LONGEST_WINNING_STREAK,
-                                  SWAGGER_WIN_SITE_PERCENT, SWAGGER_WIN_HOME_PERCENT)
+                                  SWAGGER_WIN_SITE_PERCENT, SWAGGER_WIN_HOME_PERCENT, SWAGGER_TICKETS_CALENDAR_LOG)
 from apps.tickets.models import Ticket
 from apps.games.models import Game
 
@@ -44,6 +45,7 @@ logger = logging.getLogger(__name__)
     longest_winning_streak=SWAGGER_LONGEST_WINNING_STREAK,
     win_site_percent=SWAGGER_WIN_SITE_PERCENT,
     win_home_percent=SWAGGER_WIN_HOME_PERCENT,
+    ticket_calendar_log=SWAGGER_TICKETS_CALENDAR_LOG,
 )
 
 class TicketsViewSet(
@@ -317,3 +319,14 @@ class TicketsViewSet(
 
         return Response(win_percent)
 
+    from datetime import datetime
+
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 한달 간격 이내 직관 내용 출력
+    def ticket_calendar_log(self, request):
+        user = request.user
+        input_date = request.GET.get('date')  # 'YYYY-MM' 형식의 날짜 입력 받기
+        input_year, input_month = map(int, input_date.split('-'))
+        ticket = Ticket.objects.filter(writer=user, date__year=input_year, date__month=input_month)
+
+        serializer = TicketCalendarSerializer(ticket, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
