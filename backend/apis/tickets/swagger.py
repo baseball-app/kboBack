@@ -74,6 +74,7 @@ SWAGGER_TICKETS_ADD = extend_schema(
         "multipart/form-data": {
             "type": "object",
             "properties": {
+                "date": {"type": "string"},
                 "game": {"type": "integer"},
                 "result": {"type": "string"},
                 "weather": {"type": "string"},
@@ -99,6 +100,7 @@ SWAGGER_TICKETS_ADD = extend_schema(
                         "경기일정에서 받아와야 하는 값"
                         "game_id -> game",
             value={
+                "date": "2025-08-21",
                 "game": 624,
                 "result": "승리",
                 "weather": "흐림",

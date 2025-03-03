@@ -106,7 +106,6 @@ class TicketsViewSet(
             game_id = request.data.get('game')
             try:
                 game = Game.objects.get(id=game_id)
-                date = game.game_date
                 ballpark_id = game.ballpark.id
                 opponent_id = game.team_away.id
             except Game.DoesNotExist:
@@ -117,7 +116,7 @@ class TicketsViewSet(
 
             serializer = TicketAddSerializer(data=data, context={'request': request})
             if serializer.is_valid():
-                serializer.save(writer=user,ballpark=ballpark_id,opponent=opponent_id,date=date)
+                serializer.save(writer=user,ballpark=ballpark_id,opponent=opponent_id)
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors, status=400)

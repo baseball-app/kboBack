@@ -41,7 +41,7 @@ class TicketAddSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
-        fields = ['id', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
+        fields = ['id', 'date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
                   'gip_place', 'image', 'food', 'memo', 'is_homeballpark', 'created_at', 'updated_at', 'ballpark',
                   'game', 'opponent', 'writer', 'only_me', 'is_double', 'favorite']
 
@@ -49,7 +49,6 @@ class TicketAddSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         user = request.user
         image = validated_data.pop('image', None)
-        date = validated_data.pop('date', None)
         game_id = validated_data.pop('game', None)
 
         ballpark_id = validated_data.pop('ballpark', None)
@@ -57,7 +56,6 @@ class TicketAddSerializer(serializers.ModelSerializer):
 
         try:
             ticket = Ticket.objects.create(
-                date=date,
                 writer_id=user.id,
                 game=game_id,
                 ballpark_id=ballpark_id,
