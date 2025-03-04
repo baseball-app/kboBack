@@ -39,6 +39,10 @@ client_secret = "change me"
 client_id = "change me"
 client_secret = "change me"
 
+[api_keys.apple]
+client_id = "change me"
+client_secret = "change me"
+
 [aws]
 AWS_S3_ACCESS_KEY = ""
 AWS_S3_SECRET_KEY = ""

@@ -6,9 +6,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from .serializers import KakaoInputSerializer, NaverInputSerializer, TokenRefreshSerializer
-from .services import NaverAuthService, KakaoAuthService
-from .swagger import SWAGGER_TOKEN_REFRESH, SWAGGER_TOKEN_REVOKE, SWAGGER_NAVER, SWAGGER_KAKAO
+from .serializers import KakaoInputSerializer, NaverInputSerializer, TokenRefreshSerializer, AppleInputSerializer
+from .services import NaverAuthService, KakaoAuthService, AppleAuthService
+from .swagger import SWAGGER_TOKEN_REFRESH, SWAGGER_TOKEN_REVOKE, SWAGGER_NAVER, SWAGGER_KAKAO, SWAGGER_APPLE
 from .utils import issue_tokens, reissue_tokens, revoke_tokens
 from ..exceptions import ApiValidationError
 
@@ -18,6 +18,7 @@ User = get_user_model()
 @extend_schema_view(
     naver=SWAGGER_NAVER,
     kakao=SWAGGER_KAKAO,
+    apple=SWAGGER_APPLE,
     token_refresh=SWAGGER_TOKEN_REFRESH,
     token_revoke=SWAGGER_TOKEN_REVOKE,
     token_test=extend_schema(exclude=True),
@@ -72,6 +73,23 @@ class AuthsViewSet(GenericViewSet):
         except Exception as e:
             return Response({"detail": "Internal Server Error", "error": str(e)},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(methods=["POST"], detail=False, permission_classes=[AllowAny])
+    def apple(self, request):
+        serializer = AppleInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        auth_service = AppleAuthService()
+        social_user_info = auth_service.get_social_user(data=data)
+        if not social_user_info:
+            raise ApiValidationError("Token is not valid")
+
+        user, is_new_user = auth_service.auth_or_register(social_user_info)
+        if not user:
+            raise ApiValidationError("User is not valid")
+
+        return Response({"is_new_user": is_new_user, **issue_tokens(user)}, status=status.HTTP_200_OK)
 
     @action(methods=["POST"], url_path="token/refresh", detail=False, permission_classes=[IsAuthenticated])
     def token_refresh(self, request):

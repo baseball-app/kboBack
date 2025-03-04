@@ -38,6 +38,7 @@ django-celery-beat = "^2.7.0"
 django-celery-results = "^2.5.1"
 boto3 = "^1.36.8"
 django-storages = "^1.14.4"
+pyjwt = "^2.10.1"
 
 
 [build-system]
