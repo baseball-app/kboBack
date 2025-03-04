@@ -12,5 +12,10 @@ class KakaoInputSerializer(Serializer):
     state = serializers.CharField(max_length=255, required=False)
 
 
+class AppleInputSerializer(Serializer):
+    code = serializers.CharField(max_length=255, required=True)
+    state = serializers.CharField(max_length=255, required=False)
+
+
 class TokenRefreshSerializer(Serializer):
     refresh_token = serializers.CharField(max_length=255, required=True)

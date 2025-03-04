@@ -137,6 +137,10 @@ SOCIAL_LOGIN = {
         "CLIENT_ID": config["api_keys"]["kakao"]["client_id"],
         "CLIENT_SECRET": config["api_keys"]["kakao"]["client_secret"],
     },
+    "APPLE": {
+        "CLIENT_ID": config["api_keys"]["apple"]["client_id"],
+        "CLIENT_SECRET": config["api_keys"]["apple"]["client_secret"],
+    },
 }
 
 AUTH_PASSWORD_VALIDATORS = [

@@ -33,6 +33,13 @@ SWAGGER_KAKAO = extend_schema(
     request=BODY_PARAMETER_FOR_TOKEN,
 )
 
+SWAGGER_APPLE = extend_schema(
+    tags=SWAGGER_AUTHS_TAGS,
+    summary="애플 소셜 로그인하여 회원가입/로그인",
+    description="애플 아이디로 로그인하여 회원가입/로그인",
+    request=BODY_PARAMETER_FOR_TOKEN,
+)
+
 SWAGGER_TOKEN_REFRESH = extend_schema(
     tags=SWAGGER_AUTHS_TAGS,
     summary="토큰 새로고침",
