@@ -88,7 +88,7 @@ class TicketUpdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket  # 여기서 Ticket 모델을 지정합니다.
         fields = ['id','date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
-                  'gip_place', 'image', 'food', 'memo', 'is_homeballpark','updated_at', 'writer_id', 'only_me']
+                  'gip_place', 'image', 'food', 'memo', 'is_homeballpark','updated_at', 'writer_id', 'only_me', 'direct_']
 
     def create(self, validated_data):
         request = self.context.get('request')

@@ -128,7 +128,7 @@ class TicketsViewSet(
             logger.error(f"Error occurred in ticket_add: {e}")
             return Response({'error': str(e)}, status=500)
 
-    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])  # 티켓 일기 수정하기
+    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])  # 직관 일기 수정하기
     def ticket_upd(self, request):
         try:
             ticket_identifier = request.data.get('id')
@@ -140,7 +140,7 @@ class TicketsViewSet(
             except Ticket.DoesNotExist:
                 return Response({"detail": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)
 
-            serializer = TicketAddSerializer(ticket, data=request.data, partial=True, context={'request': request})
+            serializer = TicketUpdSerializer(ticket, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=200)

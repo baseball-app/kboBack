@@ -6,7 +6,6 @@ from rest_framework import serializers
 
 from apis.tickets.serializers import TicketSerializer
 from apis.tickets.serializers import TicketListSerializer
-from apis.tickets.serializers import TicketUpdSerializer
 from apis.tickets.serializers import TicketReactionSerializer
 from apis.tickets.serializers import TicketDelSerializer
 from apis.tickets.serializers import TicketFavoriteSerializer
@@ -144,6 +143,8 @@ SWAGGER_TICKETS_UPD = extend_schema(
                 "is_homeballpark": {"type": "boolean"},
                 "only_me": {"type": "boolean"},
                 "is_double": {"type": "boolean"},
+                "direct_home_team": {"type": "string"},
+                "direct_away_team": {"type": "string"},
             }
         }
     },
@@ -151,7 +152,8 @@ SWAGGER_TICKETS_UPD = extend_schema(
         OpenApiExample(
             name="Example",
             summary="Example input",
-            description="티켓 일기 입력(수정) 예시입니다.",
+            description="티켓 일기 입력(수정) 예시입니다. \n"
+                        "direct_home_team과 direct_away_team경우에는 direct_yn 이 True일 경우에만 기입필요",
             value={
                 "id":1,
                 "result": "패배",
