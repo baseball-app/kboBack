@@ -378,3 +378,57 @@ SWAGGER_TICKETS_CALENDAR_LOG = extend_schema(
     ],
 )
 
+SWAGGER_TICKETS_DIRECT_ADD = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="직관 일기 직접 등록",
+    description="내 직관일기를 직접 등록합니다.(팀명)",
+    request={
+        "multipart/form-data": {
+            "type": "object",
+            "properties": {
+                "date": {"type": "string"},
+                "result": {"type": "string"},
+                "weather": {"type": "string"},
+                "is_ballpark": {"type": "boolean"},
+                "score_our": {"type": "integer"},
+                "score_opponent": {"type": "integer"},
+                "starting_pitchers": {"type": "string"},
+                "gip_place": {"type": "string"},
+                "image": {"type": "string", "format": "binary"},
+                "food": {"type": "string"},
+                "memo": {"type": "string"},
+                "is_homeballpark": {"type": "boolean"},
+                "only_me": {"type": "boolean"},
+                "is_double": {"type": "boolean"},
+                "direct_home_team": {"type": "string"},
+                "direct_away_team": {"type": "string"},
+            }
+        }
+    },
+    examples=[
+        OpenApiExample(
+            name="Example",
+            summary="Example input",
+            description="직관 일기 직접 입력 예시입니다. \n ",
+            value={
+                "date": "2025-08-21",
+                "result": "승리",
+                "weather": "흐림",
+                "is_ballpark": True,
+                "score_our":9,
+                "score_opponent":6,
+                "starting_pitchers": "원태인",
+                "gip_place": "",
+                "image": "",
+                "food": "닭강정",
+                "memo": "재미있었다",
+                "is_homeballpark":True,
+                "only_me": False,
+                "is_double": False,
+                "direct_home_team": "SSG랜더스",
+                "direct_away_team": "KT위즈",
+            }
+        )
+    ],
+    responses={200: OpenApiTypes.OBJECT},
+)

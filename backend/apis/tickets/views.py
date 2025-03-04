@@ -11,11 +11,12 @@ from apis.tickets.serializers import TicketListSerializer
 from apis.tickets.serializers import TicketUpdSerializer
 from apis.tickets.serializers import TicketAddSerializer
 from apis.tickets.serializers import TicketCalendarSerializer
+from apis.tickets.serializers import TicketDirectAddSerializer
 
 from apis.tickets.swagger import (SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST,
                                   SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION, SWAGGER_TICKETS_FAVORITE,
                                   SWAGGER_WEEKDAY_MOST_WIN, SWAGGER_BALLPARK_MOST_WIN, SWAGGER_OPPONENT_MOST_WIN, SWAGGER_LONGEST_WINNING_STREAK,
-                                  SWAGGER_WIN_SITE_PERCENT, SWAGGER_WIN_HOME_PERCENT, SWAGGER_TICKETS_CALENDAR_LOG)
+                                  SWAGGER_WIN_SITE_PERCENT, SWAGGER_WIN_HOME_PERCENT, SWAGGER_TICKETS_CALENDAR_LOG, SWAGGER_TICKETS_DIRECT_ADD)
 from apps.tickets.models import Ticket
 from apps.games.models import Game
 
@@ -46,6 +47,7 @@ logger = logging.getLogger(__name__)
     win_site_percent=SWAGGER_WIN_SITE_PERCENT,
     win_home_percent=SWAGGER_WIN_HOME_PERCENT,
     ticket_calendar_log=SWAGGER_TICKETS_CALENDAR_LOG,
+    ticket_direct_add=SWAGGER_TICKETS_DIRECT_ADD,
 )
 
 class TicketsViewSet(
@@ -330,3 +332,17 @@ class TicketsViewSet(
 
         serializer = TicketCalendarSerializer(ticket, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated]) # 경기 직접 입력 CASE
+    def ticket_direct_add(self, request):
+        user = request.user
+        try:
+            serializer = TicketDirectAddSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                serializer.save(writer=user)
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=400)
+        except Exception as e:
+            logger.error(f"Error occurred in ticket_add: {e}")
+            return Response({'error': str(e)}, status=500)

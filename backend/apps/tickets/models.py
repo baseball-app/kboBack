@@ -60,5 +60,10 @@ class Ticket(models.Model):
 
     favorite = models.BooleanField(default=False)
 
+    direct_home_team = models.CharField(max_length=30, default="")
+    direct_away_team = models.CharField(max_length=30, default="")
+
+    direct_yn = models.BooleanField(default=False)
+
     def __str__(self):
         return f"{self.date} - {self.result} ({self.writer})"
