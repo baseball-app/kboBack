@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from urllib3.filepost import writer
 
 from apis.tickets.serializers import TicketSerializer
 from apis.tickets.serializers import TicketListSerializer
@@ -94,12 +95,21 @@ class TicketsViewSet(
     def ticket_detail(self, request):
         user = request.user
         ticket_id = request.query_params.get('id')
-        if not ticket_id:
-            return Response({"detail": "티켓id값이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            ticket = Ticket.objects.get(id=ticket_id,writer=user)  # 해당 ID의 티켓 객체 가져오기
-        except Ticket.DoesNotExist:
-            return Response({"detail": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)
+        ticket_date = request.query_params.get('date')
+
+        if ticket_id:
+            try:
+                ticket = Ticket.objects.get(id=ticket_id, writer=user)  # 해당 ID의 티켓 객체 가져오기
+            except Ticket.DoesNotExist:
+                return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
+        elif ticket_date:
+            try:
+                ticket = Ticket.objects.get(date=ticket_date, writer=user)  # 해당 Date의 티켓 객체 가져오기
+            except Ticket.DoesNotExist:
+                return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"detail": "티켓id값 또는 date값이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = TicketSerializer(ticket)  # 티켓 직렬화
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -118,9 +128,16 @@ class TicketsViewSet(
             data = request.data.copy()
             data['game'] = game_id
 
+            # ticket 테이블에서 일치하는 date 값의 개수를 확인
+            match_count = Ticket.objects.filter(date=data['date'],writer=user).count()
+
+            # 하루에 2건까지 추가 가능
+            if match_count >= 2:
+                return Response({'error': '하루 티켓 발권 가능 갯수를 초과하였습니다.'}, status=400)
+
             serializer = TicketAddSerializer(data=data, context={'request': request})
             if serializer.is_valid():
-                serializer.save(writer=user,ballpark=ballpark_id,opponent=opponent_id)
+                serializer.save(writer=user, ballpark=ballpark_id, opponent=opponent_id)
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors, status=400)
@@ -133,12 +150,12 @@ class TicketsViewSet(
         try:
             ticket_identifier = request.data.get('id')
             if not ticket_identifier:
-                return Response({"detail": "ID parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": "티켓 id값이 존재하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
                 ticket = Ticket.objects.get(id=ticket_identifier)
             except Ticket.DoesNotExist:
-                return Response({"detail": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
 
             serializer = TicketUpdSerializer(ticket, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid():
@@ -333,16 +350,25 @@ class TicketsViewSet(
         serializer = TicketCalendarSerializer(ticket, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated]) # 경기 직접 입력 CASE
+    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])  # 경기 직접 입력 CASE
     def ticket_direct_add(self, request):
         user = request.user
         try:
-            serializer = TicketDirectAddSerializer(data=request.data, context={'request': request})
+            data = request.data.copy()
+
+            # ticket 테이블에서 일치하는 date 값의 개수를 확인
+            match_count = Ticket.objects.filter(date=data['date'], writer=user).count()
+
+            # 하루에 2건까지 추가 가능
+            if match_count >= 2:
+                return Response({'error': '하루 티켓 발권 가능 갯수를 초과하였습니다.'}, status=400)
+
+            serializer = TicketDirectAddSerializer(data=data, context={'request': request})
             if serializer.is_valid():
                 serializer.save(writer=user)
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors, status=400)
         except Exception as e:
-            logger.error(f"Error occurred in ticket_add: {e}")
+            logger.error(f"Error occurred in ticket_direct_add: {e}")
             return Response({'error': str(e)}, status=500)

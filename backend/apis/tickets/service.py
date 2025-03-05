@@ -150,6 +150,6 @@ class TicketService:
             ExtraArgs={"ContentType": image.content_type},
         )
 
-        return f"{settings.AWS_S3_CUSTOM_DOMAIN}/{file_key}"
+        return f"{settings.AWS_S3_CUSTOM_DOMAIN}{file_key}"
 
 

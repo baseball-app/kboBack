@@ -24,7 +24,15 @@ QUERY_PARAMETER_DETAIL_TYPE = OpenApiParameter(
     name="id",
     type=str,
     location=OpenApiParameter.QUERY,
-    description="확인하고자 하는 ticket_id를 입력시켜주세요. (티켓 추가 작업 후 확인 가능)",
+    description="확인하고자 하는 ticket_id를 입력시켜주세요.",
+    required=False,
+)
+
+QUERY_PARAMETER_CALENDAR_TYPE = OpenApiParameter(
+    name="date",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="확인하고자 하는 date값(YYYY-MM-DD)을 입력시켜주세요. (캘린더 화면 접근시 id값 제외 하고서 date만 입력해주세요)",
     required=False,
 )
 
@@ -56,7 +64,10 @@ SWAGGER_TICKETS_LIST = extend_schema(
 SWAGGER_TICKETS_DETAIL = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 일기 상세 보기",
-    parameters=[QUERY_PARAMETER_DETAIL_TYPE],
+    parameters=[
+        QUERY_PARAMETER_DETAIL_TYPE,
+        QUERY_PARAMETER_CALENDAR_TYPE
+    ],
     description="직관 일기 상세 표기 표출",
     responses={
         200: OpenApiExample(
