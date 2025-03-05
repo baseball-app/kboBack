@@ -99,18 +99,22 @@ class TicketsViewSet(
 
         if ticket_id:
             try:
-                ticket = Ticket.objects.get(id=ticket_id, writer=user)  # 해당 ID의 티켓 객체 가져오기
+                tickets = Ticket.objects.filter(id=ticket_id, writer=user)  # 해당 ID의 티켓 객체 가져오기
+                if not tickets.exists():
+                    return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
             except Ticket.DoesNotExist:
                 return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
         elif ticket_date:
             try:
-                ticket = Ticket.objects.get(date=ticket_date, writer=user)  # 해당 Date의 티켓 객체 가져오기
+                tickets = Ticket.objects.filter(date=ticket_date, writer=user)  # 해당 Date의 티켓 객체 가져오기
+                if not tickets.exists():
+                    return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
             except Ticket.DoesNotExist:
                 return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({"detail": "티켓id값 또는 date값이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = TicketSerializer(ticket)  # 티켓 직렬화
+        serializer = TicketSerializer(tickets, many=True)  # 티켓 직렬화
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
