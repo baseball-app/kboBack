@@ -19,6 +19,7 @@ class GamesViewSet(
 ):
     permission_classes = [IsAuthenticated]
     serializer_class = GameSerializer
+    pagination_class = None
 
     def get_queryset(self):
         queryset = Game.objects.all()
