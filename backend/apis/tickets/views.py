@@ -70,7 +70,7 @@ class TicketsViewSet(
                     elif favorite == 'false':
                         queryset = queryset.filter(ballpark_id=team_id, favorite=False, writer=user)
                     else:
-                        queryset = queryset.filter(ballpark_id=team_id, writer=user)
+                        queryset = queryset.filter(writer=user)
                 except ValueError:
                     pass
             else: # 팀 미확인 시

@@ -42,7 +42,7 @@ class TicketListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
-        fields = ['id', 'date', 'writer_id', 'game_id', 'opponent_id', 'ballpark', 'favorite', 'direct_home_team', 'direct_away_team', 'direct_yn']
+        fields = ['id', 'date', 'writer_id', 'game_id', 'opponent_id', 'ballpark', 'is_double', 'favorite', 'direct_home_team', 'direct_away_team', 'direct_yn']
 
 # 등록용 Serializer
 class TicketAddSerializer(serializers.ModelSerializer):
