@@ -342,8 +342,6 @@ class TicketsViewSet(
 
         return Response(win_percent)
 
-    from datetime import datetime
-
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 한달 간격 이내 직관 내용 출력
     def ticket_calendar_log(self, request):
         user = request.user

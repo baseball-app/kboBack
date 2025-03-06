@@ -64,6 +64,7 @@ class Ticket(models.Model):
     direct_away_team = models.CharField(max_length=30, default="")
 
     direct_yn = models.BooleanField(default=False)
+    is_cheer_home = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.date} - {self.result} ({self.writer})"

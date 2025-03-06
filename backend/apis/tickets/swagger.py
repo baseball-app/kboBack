@@ -415,6 +415,7 @@ SWAGGER_TICKETS_DIRECT_ADD = extend_schema(
                 "is_double": {"type": "boolean"},
                 "direct_home_team": {"type": "string"},
                 "direct_away_team": {"type": "string"},
+                "is_cheer_home": {"type": "boolean"},
             }
         }
     },
@@ -440,6 +441,7 @@ SWAGGER_TICKETS_DIRECT_ADD = extend_schema(
                 "is_double": False,
                 "direct_home_team": "SSG랜더스",
                 "direct_away_team": "KT위즈",
+                "is_cheer_home": True,
             }
         )
     ],

@@ -33,7 +33,7 @@ class TicketSerializer(serializers.ModelSerializer):
         model = Ticket  # 여기서 Ticket 모델을 지정합니다.
         fields = ['id', 'date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
                   'gip_place', 'image', 'food', 'memo', 'is_homeballpark', 'created_at', 'updated_at', 'ballpark',
-                  'game', 'opponent', 'writer', 'like', 'love', 'haha', 'yay', 'wow', 'sad', 'angry','only_me', 'is_double', 'favorite', 'direct_home_team', 'direct_away_team', 'direct_yn']
+                  'game', 'opponent', 'writer', 'like', 'love', 'haha', 'yay', 'wow', 'sad', 'angry','only_me', 'is_double', 'favorite', 'direct_home_team', 'direct_away_team', 'direct_yn', 'is_cheer_home']
 
 # 리스트용 Serialize
 
@@ -42,7 +42,7 @@ class TicketListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
-        fields = ['id', 'date', 'writer_id', 'game_id', 'opponent_id', 'ballpark', 'is_double', 'favorite', 'direct_home_team', 'direct_away_team', 'direct_yn']
+        fields = ['id', 'date', 'writer_id', 'game_id', 'opponent_id', 'ballpark', 'is_double', 'favorite', 'direct_home_team', 'direct_away_team', 'direct_yn', 'is_cheer_home']
 
 # 등록용 Serializer
 class TicketAddSerializer(serializers.ModelSerializer):
@@ -88,7 +88,7 @@ class TicketUpdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket  # 여기서 Ticket 모델을 지정합니다.
         fields = ['id','date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
-                  'gip_place', 'image', 'food', 'memo', 'is_homeballpark','updated_at', 'writer_id', 'only_me', 'direct_']
+                  'gip_place', 'image', 'food', 'memo', 'is_homeballpark','updated_at', 'writer_id', 'only_me', 'direct_home_team', 'direct_away_team', 'is_cheer_home']
 
     def create(self, validated_data):
         request = self.context.get('request')
@@ -145,7 +145,7 @@ class TicketDirectAddSerializer(serializers.ModelSerializer):
         model = Ticket
         fields = ['id', 'date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
                   'gip_place', 'image', 'food', 'memo', 'is_homeballpark', 'created_at', 'updated_at', 'ballpark',
-                  'game', 'opponent', 'writer', 'only_me', 'is_double', 'favorite', 'direct_home_team', 'direct_away_team']
+                  'game', 'opponent', 'writer', 'only_me', 'is_double', 'favorite', 'direct_home_team', 'direct_away_team', 'is_cheer_home']
 
     def create(self, validated_data):
         request = self.context.get('request')
