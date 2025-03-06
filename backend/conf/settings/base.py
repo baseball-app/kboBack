@@ -227,7 +227,7 @@ DEFAULT_HOST = "http://localhost:8000"
 
 # Sentry 설정
 sentry_sdk.init(
-    dsn=config["sentry"],
+    dsn=config["sentry"].get("dsn_url", ""),
     integrations=[
         DjangoIntegration(),
     ],
