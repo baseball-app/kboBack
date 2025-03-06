@@ -7,8 +7,11 @@ from rest_framework.mixins import (
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
+from base.mixins import SentryLoggingMixin
+
 
 class AlertsViewSet(
+    SentryLoggingMixin,
     ListModelMixin,
     CreateModelMixin,
     UpdateModelMixin,

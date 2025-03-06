@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from base.mixins import SentryLoggingMixin
 from .serializers import (
     UserInfoSerializer,
     UserFollowSerializer,
@@ -39,7 +40,10 @@ from .swagger import (
     invitation_code=SWAGGER_USERS_INVITATION_CODE,
     apply_invitation=SWAGGER_USERS_APPLY_INVITATION,
 )
-class UsersViewSet(GenericViewSet):
+class UsersViewSet(
+    SentryLoggingMixin,
+    GenericViewSet
+):
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
     def me(self, request):
         serializer = UserInfoSerializer(request.user)

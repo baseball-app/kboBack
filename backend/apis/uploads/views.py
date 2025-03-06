@@ -7,12 +7,16 @@ from rest_framework.viewsets import GenericViewSet
 
 from apis.uploads.services import UploadProfileService
 from apis.uploads.swagger import SWAGGER_UPLOADS_PROFILE
+from base.mixins import SentryLoggingMixin
 
 
 @extend_schema_view(
     profile=SWAGGER_UPLOADS_PROFILE,
 )
-class UploadsViewSet(GenericViewSet):
+class UploadsViewSet(
+    SentryLoggingMixin,
+    GenericViewSet
+):
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
     def profile(self, request):
         service = UploadProfileService()

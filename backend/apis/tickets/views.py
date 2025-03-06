@@ -20,6 +20,7 @@ from apis.tickets.swagger import (SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAG
                                   SWAGGER_WIN_SITE_PERCENT, SWAGGER_WIN_HOME_PERCENT, SWAGGER_TICKETS_CALENDAR_LOG, SWAGGER_TICKETS_DIRECT_ADD)
 from apps.tickets.models import Ticket
 from apps.games.models import Game
+from base.mixins import SentryLoggingMixin
 
 from .service import TicketService
 from django.db.models import Count, Case, When, IntegerField, Max, F, Q
@@ -52,6 +53,7 @@ logger = logging.getLogger(__name__)
 )
 
 class TicketsViewSet(
+    SentryLoggingMixin,
     GenericViewSet,
 ):
 

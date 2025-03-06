@@ -10,6 +10,7 @@ from rest_framework.viewsets import GenericViewSet
 from apis.notifications.serializers import NotificationSerializer
 from apis.notifications.swagger import SWAGGER_NOTIFICATIONS_LIST, SWAGGER_NOTIFICATIONS_UPDATE
 from apps.notifications.models import Notification
+from base.mixins import SentryLoggingMixin
 
 
 @extend_schema_view(
@@ -17,6 +18,7 @@ from apps.notifications.models import Notification
     update=SWAGGER_NOTIFICATIONS_UPDATE,
 )
 class NotificationsViewSet(
+    SentryLoggingMixin,
     ListModelMixin,
     UpdateModelMixin,
     GenericViewSet,
