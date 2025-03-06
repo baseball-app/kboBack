@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from base.mixins import SentryLoggingMixin
 from .serializers import KakaoInputSerializer, NaverInputSerializer, TokenRefreshSerializer, AppleInputSerializer
 from .services import NaverAuthService, KakaoAuthService, AppleAuthService
 from .swagger import SWAGGER_TOKEN_REFRESH, SWAGGER_TOKEN_REVOKE, SWAGGER_NAVER, SWAGGER_KAKAO, SWAGGER_APPLE
@@ -24,7 +25,7 @@ User = get_user_model()
     token_test=extend_schema(exclude=True),
     login_test=extend_schema(exclude=True),
 )
-class AuthsViewSet(GenericViewSet):
+class AuthsViewSet(SentryLoggingMixin, GenericViewSet):
     @action(methods=["POST"], url_path="token-test", detail=False, permission_classes=[AllowAny])
     def token_test(self, request):
         user = User.objects.filter(id=int(request.data.get("user_id"))).first()
