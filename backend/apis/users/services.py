@@ -13,12 +13,16 @@ User = get_user_model()
 
 class UserFollowService:
     def make_relation(self, source_id, target_id):
+        if source_id == target_id:
+            return
         s_user = User.objects.get(id=source_id)
         t_user = User.objects.get(id=target_id)
         Friendship.objects.create(source=s_user, target=t_user)
         Friendship.objects.create(source=t_user, target=s_user)
 
     def release_relation(self, source_id, target_id):
+        if source_id == target_id:
+            return
         s_user = User.objects.get(id=source_id)
         t_user = User.objects.get(id=target_id)
         Friendship.objects.filter(source=s_user, target=t_user).delete()
@@ -67,4 +71,4 @@ class UserModifyService:
                 user_team.save()
                 user = user_team.user
 
-                Ticket.objects.filter(user=user).delete()
+                Ticket.objects.filter(writer=user).delete()
