@@ -69,7 +69,7 @@ class UsersViewSet(
 
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
     def friends(self, request):
-        serializer = UserFriendsSerializer(instance=request.user, context={"game_id": request.query_params.get("game_id")})
+        serializer = UserFriendsSerializer(instance=request.user)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
