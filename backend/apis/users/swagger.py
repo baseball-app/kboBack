@@ -105,9 +105,6 @@ SWAGGER_USERS_FRIENDS = extend_schema(
     tags=SWAGGER_USERS_TAGS,
     summary="친구 조회",
     description="친구 정보를 조회합니다. 티켓 정보 포함",
-    parameters=[
-        QUERY_PARAMETER_GAME_ID,
-    ],
     responses={200: OpenApiTypes.OBJECT},
     examples=[
         OpenApiExample(

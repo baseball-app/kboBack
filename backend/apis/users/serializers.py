@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models import Prefetch
+from django.utils.timezone import localtime, now
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, Serializer
 
@@ -64,7 +65,7 @@ class UserInfoSerializer(Serializer):
 class UserTicketInfoSimpleSerializer(ModelSerializer):
     class Meta:
         model = Ticket
-        fields = ["writer_id", "game_id"]
+        fields = ["id", "writer_id", "game_id"]
 
 
 class UserTicketSerializer(ModelSerializer):
@@ -79,10 +80,9 @@ class UserTicketSerializer(ModelSerializer):
         fields = ["id", "nickname", "profile_type", "profile_image", "ticket_info"]
 
     def get_ticket_info(self, obj):
-        game_id = self.context.get("game_id")
-        if not game_id:
-            return {}
-        ticket_info = Ticket.objects.filter(writer=obj.id, game_id=game_id).last()
+        today_start = localtime(now()).replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = localtime(now()).replace(hour=23, minute=59, second=59, microsecond=999999)
+        ticket_info = Ticket.objects.filter(writer=obj.id, created_at__range=(today_start, today_end)).last()
         result = UserTicketInfoSimpleSerializer(ticket_info).data
         return result
 
@@ -91,19 +91,11 @@ class UserFriendsSerializer(Serializer):
     friends = serializers.SerializerMethodField()
 
     def get_friends(self, obj):
-        game_id = self.context.get("game_id")
-        user_queryset = User.objects.all()
-
-        if game_id:
-            user_queryset = User.objects.prefetch_related(
-                Prefetch("ticket_set", queryset=Ticket.objects.filter(game_id=game_id))
-            )
-
         friends = Friendship.objects.filter(source=obj).prefetch_related(
-            Prefetch("target", queryset=user_queryset)
+            Prefetch("target", queryset=User.objects.all())
         )
 
-        return UserTicketSerializer([friend.target for friend in friends], many=True, context={"game_id": game_id}).data
+        return UserTicketSerializer([friend.target for friend in friends], many=True).data
 
 
 class UserFollowSerializer(Serializer):
