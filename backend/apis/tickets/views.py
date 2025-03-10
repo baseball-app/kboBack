@@ -63,28 +63,15 @@ class TicketsViewSet(
             user = request.user
             queryset = Ticket.objects.all()
             team_id = self.request.query_params.get("team_id")
-            favorite = self.request.query_params.get("favorite")
+            favorite = self.request.query_params.get("favorite") == 'True'
+            cheer = self.request.query_params.get('cheer') == 'True'
 
-            if team_id: # 팀 확인 시
-                try:
-                    if favorite == 'true': # 최애 경기 보고 싶을 경우
-                        queryset = queryset.filter(ballpark_id=team_id, favorite=True, writer=user)
-                    elif favorite == 'false':
-                        queryset = queryset.filter(ballpark_id=team_id, favorite=False, writer=user)
-                    else:
-                        queryset = queryset.filter(writer=user)
-                except ValueError:
-                    pass
-            else: # 팀 미확인 시
-                try:
-                    if favorite == 'true':
-                        queryset = queryset.filter(favorite=True, writer=user)
-                    elif favorite == 'false':
-                        queryset = queryset.filter(favorite=False, writer=user)
-                    else:
-                        queryset = queryset.filter(writer=user)
-                except ValueError:
-                    pass
+            if favorite:  # 최애 경기 픽했을 경우
+                queryset = queryset.filter(writer=user, favorite=True)
+            elif cheer:  # 마이팀이 아닌 타팀 경기 픽했을 경우
+                queryset = queryset.filter(writer=user, cheer=True)
+            elif team_id:  # 팀 별로 골라보기
+                queryset = queryset.filter(writer=user, team_id=team_id)
 
             serializer = TicketListSerializer(queryset, many=True)  # 쿼리셋 직렬화
             return Response(serializer.data)
@@ -124,6 +111,10 @@ class TicketsViewSet(
         user = request.user
         try:
             game_id = request.data.get('game')
+            if game_id == 0:
+                game = 1
+                ballpark_id = 1
+                opponent_id = 1
             try:
                 game = Game.objects.get(id=game_id)
                 ballpark_id = game.ballpark.id
@@ -135,7 +126,7 @@ class TicketsViewSet(
             data['game'] = game_id
 
             # ticket 테이블에서 일치하는 date 값의 개수를 확인
-            match_count = Ticket.objects.filter(date=data['date'],writer=user).count()
+            match_count = Ticket.objects.filter(date=data['date'], writer=user).count()
 
             # 하루에 2건까지 추가 가능
             if match_count >= 2:

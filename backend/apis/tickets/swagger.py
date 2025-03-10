@@ -49,7 +49,16 @@ SWAGGER_TICKETS_FIND_FAVORITE = OpenApiParameter(
     type=str,
     location=OpenApiParameter.QUERY,
     description="최애 경기를 확인하고 싶은 경우 해당 값에 True를 넣어주세요.",
-    default=True,
+    default=False,
+    required=False,
+)
+
+SWAGGER_TICKETS_FIND_CHEER = OpenApiParameter(
+    name="cheer",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="타팀 경기를 확인하고 싶은 경우 해당 값에 True를 넣어주세요.",
+    default=False,
     required=False,
 )
 
@@ -61,6 +70,7 @@ SWAGGER_TICKETS_LIST = extend_schema(
     parameters=[
         QUERY_PARAMETER_LIST_TYPE,
         SWAGGER_TICKETS_FIND_FAVORITE,
+        SWAGGER_TICKETS_FIND_CHEER,
     ],
     responses={
         200: OpenApiExample(
@@ -87,7 +97,7 @@ SWAGGER_TICKETS_DETAIL = extend_schema(
 SWAGGER_TICKETS_ADD = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 일기 등록",
-    description="내 직관일기를 등록합니다.",
+    description="내 직관일기를 등록합니다. (직접입력, 자동입력 통합)",
     request={
         "multipart/form-data": {
             "type": "object",
@@ -109,6 +119,7 @@ SWAGGER_TICKETS_ADD = extend_schema(
                 "is_double": {"type": "boolean"},
                 "hometeam_id": {"type": "integer"},
                 "awayteam_id": {"type": "integer"},
+                "direct_yn": {"type": "boolean"},
                 "is_cheer": {"type", "boolean"},
             }
         }
@@ -117,9 +128,7 @@ SWAGGER_TICKETS_ADD = extend_schema(
         OpenApiExample(
             name="Example",
             summary="Example input",
-            description="직관 일기 입력 예시입니다. \n "
-                        "경기일정에서 받아와야 하는 값"
-                        "game_id -> game",
+            description="직관 일기 입력 예시입니다. \n ",
             value={
                 "date": "2025-08-21",
                 "game": 624,
@@ -138,6 +147,7 @@ SWAGGER_TICKETS_ADD = extend_schema(
                 "is_double": False,
                 "hometeam_id": 1,
                 "awayteam_id": 6,
+                "direct_yn": False,
                 "is_cheer": False,
             }
         )
