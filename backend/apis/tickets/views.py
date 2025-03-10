@@ -20,7 +20,8 @@ from apis.tickets.swagger import (SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAG
                                   SWAGGER_WIN_SITE_PERCENT, SWAGGER_WIN_HOME_PERCENT, SWAGGER_TICKETS_CALENDAR_LOG, SWAGGER_TICKETS_DIRECT_ADD)
 from apps.tickets.models import Ticket
 from apps.games.models import Game
-from base.mixins import SentryLoggingMixin
+from apps.teams.models import UserTeam
+from apps.teams.models import Team
 
 from .service import TicketService
 from django.db.models import Count, Case, When, IntegerField, Max, F, Q
@@ -53,7 +54,6 @@ logger = logging.getLogger(__name__)
 )
 
 class TicketsViewSet(
-    SentryLoggingMixin,
     GenericViewSet,
 ):
 
@@ -93,7 +93,7 @@ class TicketsViewSet(
             logger.error(f"Error occurred in ticket_list: {e}")
             return Response({'error': str(e)}, status=500)
 
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 티켓 상세 보기
+    @action(methods=["GET"], detail=False, permission_classes=[AllowAny])  # 티켓 상세 보기
     def ticket_detail(self, request):
         user = request.user
         ticket_id = request.query_params.get('id')
@@ -247,13 +247,52 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 경기 결과 통계 추산
     def win_rate_calculation(self, request):
         user = request.user
-        queryset = Ticket.objects.filter(writer=user).aggregate(
+
+        team_id = UserTeam.object.get(user_id=user).team_id #myTeam id 뽑아오기
+
+        win_count = 0
+        loss_count = 0
+        draw_count = 0
+        cancel_count = 0
+
+        #정규일정 케이스
+        queryset = Ticket.objects.filter(
+            writer=user).filter(Q(opponent=team_id) | Q(ballpark__team=team_id)).aggregate(
             win_count=Count(Case(When(result='승리', then=1), output_field=IntegerField())),
             loss_count=Count(Case(When(result='패배', then=1), output_field=IntegerField())),
             draw_count=Count(Case(When(result='무승부', then=1), output_field=IntegerField())),
             cancel_count=Count(Case(When(result='취소', then=1), output_field=IntegerField())),
         )
-        return Response(queryset)
+
+        #합산
+        win_count += queryset['win_count']
+        loss_count += queryset['loss_count']
+        draw_count += queryset['draw_count']
+
+        #일정 직접입력 케이스
+
+        #팀 명 가져오기
+        team_nm = Team.objects.get(id=team_id).name
+
+        double_queryset = Ticket.objects.filter(writer=user
+        ).filter(Q(direct_home_team=team_nm) | Q(direct_away_team=team_nm)).aggregate(
+            win_count=Count(Case(When(result='승리', then=1), output_field=IntegerField())),
+            loss_count=Count(Case(When(result='패배', then=1), output_field=IntegerField())),
+            draw_count=Count(Case(When(result='무승부', then=1), output_field=IntegerField())),
+            cancel_count=Count(Case(When(result='취소', then=1), output_field=IntegerField())),
+        )
+
+        #합산
+        win_count += double_queryset['win_count']
+        loss_count += double_queryset['loss_count']
+        draw_count += double_queryset['draw_count']
+
+        return Response({
+            'win_count': win_count,
+            'loss_count': loss_count,
+            'draw_count': draw_count,
+            'cancel_count': cancel_count
+        })
 
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 승리 많이 한 요일 산출
     def weekday_most_win(self, request):
@@ -344,35 +383,45 @@ class TicketsViewSet(
 
         return Response(win_percent)
 
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 한달 간격 이내 직관 내용 출력
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
     def ticket_calendar_log(self, request):
-        user = request.user
+        user_id = request.GET.get('user_id')
         input_date = request.GET.get('date')  # 'YYYY-MM' 형식의 날짜 입력 받기
-        input_year, input_month = map(int, input_date.split('-'))
-        ticket = Ticket.objects.filter(writer=user, date__year=input_year, date__month=input_month)
 
-        serializer = TicketCalendarSerializer(ticket, many=True)
+        filters = {}
+
+        if user_id:
+            filters['writer'] = user_id
+
+        if input_date:
+            input_year, input_month = map(int, input_date.split('-'))
+            filters['date__year'] = input_year
+            filters['date__month'] = input_month
+
+        tickets = Ticket.objects.filter(**filters)
+        serializer = TicketCalendarSerializer(tickets, many=True)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])  # 경기 직접 입력 CASE
-    def ticket_direct_add(self, request):
-        user = request.user
-        try:
-            data = request.data.copy()
-
-            # ticket 테이블에서 일치하는 date 값의 개수를 확인
-            match_count = Ticket.objects.filter(date=data['date'], writer=user).count()
-
-            # 하루에 2건까지 추가 가능
-            if match_count >= 2:
-                return Response({'error': '하루 티켓 발권 가능 갯수를 초과하였습니다.'}, status=400)
-
-            serializer = TicketDirectAddSerializer(data=data, context={'request': request})
-            if serializer.is_valid():
-                serializer.save(writer=user)
-                return Response(serializer.data)
-            else:
-                return Response(serializer.errors, status=400)
-        except Exception as e:
-            logger.error(f"Error occurred in ticket_direct_add: {e}")
-            return Response({'error': str(e)}, status=500)
+    # @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])  # 경기 직접 입력 CASE (보류중으로 변경)
+    # def ticket_direct_add(self, request):
+    #     user = request.user
+    #     try:
+    #         data = request.data.copy()
+    #
+    #         # ticket 테이블에서 일치하는 date 값의 개수를 확인
+    #         match_count = Ticket.objects.filter(date=data['date'], writer=user).count()
+    #
+    #         # 하루에 2건까지 추가 가능
+    #         if match_count >= 2:
+    #             return Response({'error': '하루 티켓 발권 가능 갯수를 초과하였습니다.'}, status=400)
+    #
+    #         serializer = TicketDirectAddSerializer(data=data, context={'request': request})
+    #         if serializer.is_valid():
+    #             serializer.save(writer=user)
+    #             return Response(serializer.data)
+    #         else:
+    #             return Response(serializer.errors, status=400)
+    #     except Exception as e:
+    #         logger.error(f"Error occurred in ticket_direct_add: {e}")
+    #         return Response({'error': str(e)}, status=500)

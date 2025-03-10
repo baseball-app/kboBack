@@ -36,6 +36,14 @@ QUERY_PARAMETER_CALENDAR_TYPE = OpenApiParameter(
     required=False,
 )
 
+QUERY_PARAMETER_CALENDAR_USER_TYPE = OpenApiParameter(
+    name="user_id",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="확인하고자 하는 유저 ID를 입력시켜주세요. (user_id값은 따로 확인해서 기입이 필요합니다.)",
+    required=False,
+)
+
 SWAGGER_TICKETS_FIND_FAVORITE = OpenApiParameter(
     name="favorite",
     type=str,
@@ -99,6 +107,9 @@ SWAGGER_TICKETS_ADD = extend_schema(
                 "is_homeballpark": {"type": "boolean"},
                 "only_me": {"type": "boolean"},
                 "is_double": {"type": "boolean"},
+                "hometeam_id": {"type": "integer"},
+                "awayteam_id": {"type": "integer"},
+                "is_cheer": {"type", "boolean"},
             }
         }
     },
@@ -125,6 +136,9 @@ SWAGGER_TICKETS_ADD = extend_schema(
                 "is_homeballpark":True,
                 "only_me": False,
                 "is_double": False,
+                "hometeam_id": 1,
+                "awayteam_id": 6,
+                "is_cheer": False,
             }
         )
     ],
@@ -154,8 +168,9 @@ SWAGGER_TICKETS_UPD = extend_schema(
                 "is_homeballpark": {"type": "boolean"},
                 "only_me": {"type": "boolean"},
                 "is_double": {"type": "boolean"},
-                "direct_home_team": {"type": "string"},
-                "direct_away_team": {"type": "string"},
+                "hometeam_id": {"type": "string"},
+                "awayteam_id": {"type": "string"},
+                "is_cheer": {"type": "boolean"},
             }
         }
     },
@@ -180,6 +195,9 @@ SWAGGER_TICKETS_UPD = extend_schema(
                 "is_homeballpark":False,
                 "only_me": True,
                 "is_double": True,
+                "hometeam_id": {"type": "integer"},
+                "awayteam_id": {"type": "integer"},
+                "is_cheer": False,
             }
         )
     ],
@@ -365,6 +383,7 @@ SWAGGER_TICKETS_CALENDAR_LOG = extend_schema(
     request=TicketSerializer,
     parameters=[
         QUERY_PARAMETER_CALENDAR_TYPE,
+        QUERY_PARAMETER_CALENDAR_USER_TYPE,
     ],
     examples=[
         OpenApiExample(
@@ -392,58 +411,58 @@ SWAGGER_TICKETS_CALENDAR_LOG = extend_schema(
 )
 
 SWAGGER_TICKETS_DIRECT_ADD = extend_schema(
-    tags=SWAGGER_TICKETS_TAGS,
-    summary="직관 일기 직접 등록",
-    description="내 직관일기를 직접 등록합니다.(팀명)",
-    request={
-        "multipart/form-data": {
-            "type": "object",
-            "properties": {
-                "date": {"type": "string"},
-                "result": {"type": "string"},
-                "weather": {"type": "string"},
-                "is_ballpark": {"type": "boolean"},
-                "score_our": {"type": "integer"},
-                "score_opponent": {"type": "integer"},
-                "starting_pitchers": {"type": "string"},
-                "gip_place": {"type": "string"},
-                "image": {"type": "string", "format": "binary"},
-                "food": {"type": "string"},
-                "memo": {"type": "string"},
-                "is_homeballpark": {"type": "boolean"},
-                "only_me": {"type": "boolean"},
-                "is_double": {"type": "boolean"},
-                "direct_home_team": {"type": "string"},
-                "direct_away_team": {"type": "string"},
-                "is_cheer_home": {"type": "boolean"},
-            }
-        }
-    },
-    examples=[
-        OpenApiExample(
-            name="Example",
-            summary="Example input",
-            description="직관 일기 직접 입력 예시입니다. \n ",
-            value={
-                "date": "2025-08-21",
-                "result": "승리",
-                "weather": "흐림",
-                "is_ballpark": True,
-                "score_our":9,
-                "score_opponent":6,
-                "starting_pitchers": "원태인",
-                "gip_place": "",
-                "image": "",
-                "food": "닭강정",
-                "memo": "재미있었다",
-                "is_homeballpark":True,
-                "only_me": False,
-                "is_double": False,
-                "direct_home_team": "SSG랜더스",
-                "direct_away_team": "KT위즈",
-                "is_cheer_home": True,
-            }
-        )
-    ],
-    responses={200: OpenApiTypes.OBJECT},
+ tags=SWAGGER_TICKETS_TAGS,
+ summary="직관 일기 직접 등록",
+ description="내 직관일기를 직접 등록합니다.(팀명)",
+ request={
+     "multipart/form-data": {
+         "type": "object",
+         "properties": {
+             "date": {"type": "string"},
+             "result": {"type": "string"},
+             "weather": {"type": "string"},
+             "is_ballpark": {"type": "boolean"},
+             "score_our": {"type": "integer"},
+             "score_opponent": {"type": "integer"},
+             "starting_pitchers": {"type": "string"},
+             "gip_place": {"type": "string"},
+             "image": {"type": "string", "format": "binary"},
+             "food": {"type": "string"},
+             "memo": {"type": "string"},
+             "is_homeballpark": {"type": "boolean"},
+             "only_me": {"type": "boolean"},
+             "is_double": {"type": "boolean"},
+             "direct_home_team": {"type": "string"},
+             "direct_away_team": {"type": "string"},
+             "is_cheer_home": {"type": "boolean"},
+         }
+     }
+ },
+ examples=[
+     OpenApiExample(
+         name="Example",
+         summary="Example input",
+         description="직관 일기 직접 입력 예시입니다. \n ",
+         value={
+             "date": "2025-08-21",
+             "result": "승리",
+             "weather": "흐림",
+             "is_ballpark": True,
+             "score_our":9,
+             "score_opponent":6,
+             "starting_pitchers": "원태인",
+             "gip_place": "",
+             "image": "",
+             "food": "닭강정",
+             "memo": "재미있었다",
+             "is_homeballpark":True,
+             "only_me": False,
+             "is_double": False,
+             "direct_home_team": "SSG랜더스",
+             "direct_away_team": "KT위즈",
+             "is_cheer_home": True,
+         }
+     )
+ ],
+ responses={200: OpenApiTypes.OBJECT},
 )
