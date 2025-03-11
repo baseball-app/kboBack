@@ -241,49 +241,16 @@ class TicketsViewSet(
 
         team_id = UserTeam.object.get(user_id=user).team_id #myTeam id 뽑아오기
 
-        win_count = 0
-        loss_count = 0
-        draw_count = 0
-        cancel_count = 0
-
-        #정규일정 케이스
+        # 티켓에서 team_id 조회하기
         queryset = Ticket.objects.filter(
-            writer=user).filter(Q(opponent=team_id) | Q(ballpark__team=team_id)).aggregate(
+            writer=user).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id)).aggregate(
             win_count=Count(Case(When(result='승리', then=1), output_field=IntegerField())),
             loss_count=Count(Case(When(result='패배', then=1), output_field=IntegerField())),
             draw_count=Count(Case(When(result='무승부', then=1), output_field=IntegerField())),
             cancel_count=Count(Case(When(result='취소', then=1), output_field=IntegerField())),
         )
 
-        #합산
-        win_count += queryset['win_count']
-        loss_count += queryset['loss_count']
-        draw_count += queryset['draw_count']
-
-        #일정 직접입력 케이스
-
-        #팀 명 가져오기
-        team_nm = Team.objects.get(id=team_id).name
-
-        double_queryset = Ticket.objects.filter(writer=user
-        ).filter(Q(direct_home_team=team_nm) | Q(direct_away_team=team_nm)).aggregate(
-            win_count=Count(Case(When(result='승리', then=1), output_field=IntegerField())),
-            loss_count=Count(Case(When(result='패배', then=1), output_field=IntegerField())),
-            draw_count=Count(Case(When(result='무승부', then=1), output_field=IntegerField())),
-            cancel_count=Count(Case(When(result='취소', then=1), output_field=IntegerField())),
-        )
-
-        #합산
-        win_count += double_queryset['win_count']
-        loss_count += double_queryset['loss_count']
-        draw_count += double_queryset['draw_count']
-
-        return Response({
-            'win_count': win_count,
-            'loss_count': loss_count,
-            'draw_count': draw_count,
-            'cancel_count': cancel_count
-        })
+        return Response(queryset)
 
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 승리 많이 한 요일 산출
     def weekday_most_win(self, request):

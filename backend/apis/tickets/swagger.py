@@ -24,7 +24,7 @@ QUERY_PARAMETER_DETAIL_TYPE = OpenApiParameter(
     name="id",
     type=str,
     location=OpenApiParameter.QUERY,
-    description="확인하고자 하는 ticket_id를 입력시켜주세요.",
+    description="확인하고자 하는 티켓의 id를 입력시켜주세요.",
     required=False,
 )
 
