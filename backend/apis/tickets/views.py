@@ -17,7 +17,7 @@ from apis.tickets.serializers import TicketDirectAddSerializer
 from apis.tickets.swagger import (SWAGGER_TICKETS_ADD, SWAGGER_TICKETS_UPD, SWAGGER_TICKETS_DEL, SWAGGER_TICKETS_LIST,
                                   SWAGGER_TICKETS_REACTION, SWAGGER_TICKETS_DETAIL, SWAGGER_WIN_RATE_CALCULATION, SWAGGER_TICKETS_FAVORITE,
                                   SWAGGER_WEEKDAY_MOST_WIN, SWAGGER_BALLPARK_MOST_WIN, SWAGGER_OPPONENT_MOST_WIN, SWAGGER_LONGEST_WINNING_STREAK,
-                                  SWAGGER_WIN_SITE_PERCENT, SWAGGER_WIN_HOME_PERCENT, SWAGGER_TICKETS_CALENDAR_LOG, SWAGGER_TICKETS_DIRECT_ADD)
+                                  SWAGGER_WIN_PERCENT, SWAGGER_TICKETS_CALENDAR_LOG, SWAGGER_TICKETS_DIRECT_ADD)
 from apps.tickets.models import Ticket
 from apps.games.models import Game
 from apps.teams.models import UserTeam
@@ -47,8 +47,7 @@ logger = logging.getLogger(__name__)
     ballpark_most_win=SWAGGER_BALLPARK_MOST_WIN,
     opponent_most_win=SWAGGER_OPPONENT_MOST_WIN,
     longest_winning_streak=SWAGGER_LONGEST_WINNING_STREAK,
-    win_site_percent=SWAGGER_WIN_SITE_PERCENT,
-    win_home_percent=SWAGGER_WIN_HOME_PERCENT,
+    win_percnet=SWAGGER_WIN_PERCENT,
     ticket_calendar_log=SWAGGER_TICKETS_CALENDAR_LOG,
     ticket_direct_add=SWAGGER_TICKETS_DIRECT_ADD,
 )
@@ -238,10 +237,9 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 경기 결과 통계 추산
     def win_rate_calculation(self, request):
         user = request.user
-
         team_id = UserTeam.object.get(user_id=user).team_id #myTeam id 뽑아오기
 
-        # 티켓에서 team_id 조회하기
+        # 티켓에서 마이팀 해당되는것만 조회하기
         queryset = Ticket.objects.filter(
             writer=user).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id)).aggregate(
             win_count=Count(Case(When(result='승리', then=1), output_field=IntegerField())),
@@ -255,7 +253,11 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 승리 많이 한 요일 산출
     def weekday_most_win(self, request):
         user = request.user
-        queryset = Ticket.objects.filter(writer=user, result="승리")
+        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+
+        # 티켓에서 마이팀 해당되는것만 조회하기
+        queryset = Ticket.objects.filter(
+            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id))
 
         service = TicketService()
         most_wins_day = service.calculate_weekday_wins(queryset)
@@ -265,7 +267,10 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 승리 많이한 구장 산출
     def ballpark_most_win(self, request):
         user = request.user
-        queryset = Ticket.objects.filter(writer=user, result="승리")
+        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+
+        queryset = Ticket.objects.filter(
+            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id))
 
         service = TicketService()
         most_wins_ballpark = service.calculate_most_win_ballpark(queryset)
@@ -275,7 +280,10 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 상대로 승리 많이한 구단 산출
     def opponent_most_win(self, request):
         user = request.user
-        queryset = Ticket.objects.filter(writer=user, result="승리")
+        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+
+        queryset = Ticket.objects.filter(
+            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id))
 
         service = TicketService()
         most_wins_opponent = service.calculate_most_win_opponent(queryset)
@@ -285,9 +293,11 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 긴 연승 기간 찾기
     def longest_winning_streak(self, request):
         user = request.user
+        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         # 티켓 승리 내역 가져오기
-        queryset = Ticket.objects.filter(writer=user, result="승리").annotate(
+        queryset = Ticket.objects.filter(
+            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id)).annotate(
             prev_date=Window(
                 expression=Lag('date', 1),
                 partition_by=[F('writer')],
@@ -311,25 +321,16 @@ class TicketsViewSet(
 
         return Response({"longest_winning_streak": max_streak})
 
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 직관 경기 승률 퍼센티지 추산
-    def win_site_percent(self, request):
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) #집관&직관 경기 승률 퍼센티지 추산
+    def win_percnet(self, request):
         user = request.user
-        queryset = Ticket.objects.filter(writer=user, is_ballpark=True)
+        ballpark_gbn = request.data.get('ballpark_gbn')
 
-        total_games = queryset.count()
-        wins = queryset.filter(result="승리").count()
-
-        if total_games == 0:
-            win_percent = 0
-        else:
-            win_percent = int((wins / total_games) * 100)
-
-        return Response(win_percent)
-
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 집관 경기 승률 퍼센티지 추산
-    def win_home_percent(self, request):
-        user = request.user
-        queryset = Ticket.objects.filter(writer=user, is_ballpark=False)
+        if ballpark_gbn == "home" :
+            is_ballpark=False
+        elif ballpark_gbn == "site" :
+            is_ballpark = True
+            queryset = Ticket.objects.filter(writer=user, is_ballpark=is_ballpark)
 
         total_games = queryset.count()
         wins = queryset.filter(result="승리").count()

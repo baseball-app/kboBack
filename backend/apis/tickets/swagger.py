@@ -347,26 +347,20 @@ SWAGGER_LONGEST_WINNING_STREAK = extend_schema(
     ],
 )
 
-SWAGGER_WIN_SITE_PERCENT = extend_schema(
+QUERY_PARAMETER_BALLPARK_GBN_TYPE = OpenApiParameter(
+    name="ballpark_gbn",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="직관인지 집관인지 값을 통해 구분해주세요. 직관일 경우 True , 집관일 경우 False",
+    required=False,
+)
+
+SWAGGER_WIN_PERCENT = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 승률 표출",
     description="직관으로 찍은 티켓의 총 승률을 계산합니다",
     responses={200: OpenApiTypes.OBJECT},
-    examples=[
-        OpenApiExample(
-            name="Example",
-            summary="Example input",
-            description="승률 계산하여 퍼센티지 숫자로 출력 (% 기호는 제외)",
-            value={50}
-        ),
-    ],
-)
-
-SWAGGER_WIN_HOME_PERCENT = extend_schema(
-    tags=SWAGGER_TICKETS_TAGS,
-    summary="집관 승률 표출",
-    description="집관으로 찍은 티켓의 총 승률을 계산합니다",
-    responses={200: OpenApiTypes.OBJECT},
+    parameters=[QUERY_PARAMETER_BALLPARK_GBN_TYPE],
     examples=[
         OpenApiExample(
             name="Example",
