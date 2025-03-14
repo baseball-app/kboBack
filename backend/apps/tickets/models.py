@@ -47,18 +47,20 @@ class Ticket(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    like = models.IntegerField(default=0)
-    love = models.IntegerField(default=0)
-    haha = models.IntegerField(default=0)
-    yay = models.IntegerField(default=0)
-    wow = models.IntegerField(default=0)
-    sad = models.IntegerField(default=0)
-    angry = models.IntegerField(default=0)
-
     only_me = models.BooleanField(default=False)
     is_double = models.BooleanField(default=False)
 
     favorite = models.BooleanField(default=False)
+
+    laugh = models.IntegerField(default=0,help_text="웃음 이모지")
+    wink = models.IntegerField(default=0,help_text="윙크 이모지")
+    good = models.IntegerField(default=0,help_text="따봉 이모지")
+    clap = models.IntegerField(default=0, help_text="박수 이모지")
+    point_up = models.IntegerField(default=0, help_text="검지 손가락 위 이모지")
+    petulance = models.IntegerField(default=0, help_text="짜증 이모지")
+    confused = models.IntegerField(default=0, help_text="혼란 이모지")
+    dislike = models.IntegerField(default=0, help_text="싫은 이모지")
+    rage = models.IntegerField(default=0, help_text="격노 이모지")
 
     hometeam_id = models.CharField(default=0)
     awayteam_id = models.CharField(default=0)

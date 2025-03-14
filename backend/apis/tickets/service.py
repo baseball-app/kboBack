@@ -21,20 +21,24 @@ class TicketService:
     def add_reaction(self, ticket_id,reaction_type):
         try:
             ticket = Ticket.objects.get(id=ticket_id)
-            if reaction_type == "like":
-                ticket.like += 1
-            elif reaction_type == "love":
-                ticket.love += 1
-            elif reaction_type == "haha":
-                ticket.haha += 1
-            elif reaction_type == "yay":
-                ticket.yay += 1
-            elif reaction_type == "wow":
-                ticket.wow += 1
-            elif reaction_type == "sad":
-                ticket.sad += 1
-            elif reaction_type == "angry":
-                ticket.angry += 1
+            if reaction_type == "laugh":
+                ticket.laugh += 1
+            elif reaction_type == "wink":
+                ticket.wink += 1
+            elif reaction_type == "good":
+                ticket.good += 1
+            elif reaction_type == "clap":
+                ticket.clap += 1
+            elif reaction_type == "point_up":
+                ticket.point_up += 1
+            elif reaction_type == "petulance":
+                ticket.petulance += 1
+            elif reaction_type == "confused":
+                ticket.confused += 1
+            elif reaction_type == "dislike":
+                ticket.confused += 1
+            elif reaction_type == "rage":
+                ticket.confused += 1
             ticket.save()
         except Ticket.DoesNotExist:
             raise ValueError("티켓을 찾을 수 없습니다.")
@@ -42,20 +46,24 @@ class TicketService:
     def del_reaction(self, ticket_id,reaction_type):
         try:
             ticket = Ticket.objects.get(id=ticket_id)
-            if reaction_type == "like":
-                ticket.like -= 1
-            elif reaction_type == "love":
-                ticket.love -= 1
-            elif reaction_type == "haha":
-                ticket.haha -= 1
-            elif reaction_type == "yay":
-                ticket.yay -= 1
-            elif reaction_type == "wow":
-                ticket.wow -= 1
-            elif reaction_type == "sad":
-                ticket.sad -= 1
-            elif reaction_type == "angry":
-                ticket.angry -= 1
+            if reaction_type == "laugh":
+                ticket.laugh -= 1
+            elif reaction_type == "wink":
+                ticket.wink -= 1
+            elif reaction_type == "good":
+                ticket.good -= 1
+            elif reaction_type == "clap":
+                ticket.clap -= 1
+            elif reaction_type == "point_up":
+                ticket.point_up -= 1
+            elif reaction_type == "petulance":
+                ticket.petulance -= 1
+            elif reaction_type == "confused":
+                ticket.confused -= 1
+            elif reaction_type == "dislike":
+                ticket.petulance -= 1
+            elif reaction_type == "rage":
+                ticket.confused -= 1
             ticket.save()
         except Ticket.DoesNotExist:
             raise ValueError("티켓을 찾을 수 없습니다.")

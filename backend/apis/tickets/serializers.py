@@ -33,7 +33,7 @@ class TicketSerializer(serializers.ModelSerializer):
         model = Ticket  # 여기서 Ticket 모델을 지정합니다.
         fields = ['id', 'date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
                   'gip_place', 'image', 'food', 'memo', 'is_homeballpark', 'created_at', 'updated_at', 'ballpark',
-                  'game', 'opponent', 'writer', 'like', 'love', 'haha', 'yay', 'wow', 'sad', 'angry','only_me', 'is_double', 'favorite', 'hometeam_id', 'awayteam_id', 'direct_yn', 'is_cheer']
+                  'game', 'opponent', 'writer', 'laugh', 'wink', 'good', 'clap', 'point_up', 'petulance', 'confused', 'dislike', 'rage', 'only_me', 'is_double', 'favorite', 'hometeam_id', 'awayteam_id', 'direct_yn', 'is_cheer']
 
 # 리스트용 Serialize
 
@@ -112,7 +112,7 @@ class TicketUpdSerializer(serializers.ModelSerializer):
 class TicketReactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
-        fields = ['id','like','love','haha','yay','wow','sad','angry']
+        fields = ['id','laugh','wink','good','clap','point_up','petulance','confused','dislike','rage']
 
 # 삭제용 Serialize
 class TicketDelSerializer(serializers.ModelSerializer):
