@@ -155,7 +155,10 @@ class TicketService:
             image_byte_array,
             settings.AWS_S3_STORAGE_BUCKET_NAME,
             file_key,
-            ExtraArgs={"ContentType": image.content_type},
+            ExtraArgs={
+                "ContentType": image.content_type,
+                "ACL": "public-read"
+            },
         )
 
         return f"{settings.AWS_S3_CUSTOM_DOMAIN}{file_key}"

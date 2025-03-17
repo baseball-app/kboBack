@@ -242,12 +242,11 @@ SWAGGER_TICKETS_REACTION = extend_schema(
         OpenApiExample(
             name="Example 4",
             summary="Example input",
-            description="티켓 반응 추가하거나 삭제하는 예시입니다. \n reaction_pos는 추가 시 add 삭제 시 del 기입 , "
-                        "\n reaction_type는 like,love,haha,yay,wow,sad,angry 기입 가능",
+            description="티켓 반응 추가하거나 삭제하는 예시입니다. \n reaction_pos는 추가 시 add 삭제 시 del 기입 ",
             value={
                 "id": 1,
                 "reaction_pos": "add",
-                "reaction_type": "like",
+                "reaction_type": "rage",
             }
         ),
     ],
@@ -347,7 +346,7 @@ SWAGGER_LONGEST_WINNING_STREAK = extend_schema(
     ],
 )
 
-QUERY_PARAMETER_BALLPARK_GBN_TYPE = OpenApiParameter(
+QUERY_PARAMETER_IS_BALLPARK_TYPE = OpenApiParameter(
     name="ballpark_gbn",
     type=str,
     location=OpenApiParameter.QUERY,
@@ -360,7 +359,7 @@ SWAGGER_WIN_PERCENT = extend_schema(
     summary="직관 승률 표출",
     description="직관으로 찍은 티켓의 총 승률을 계산합니다",
     responses={200: OpenApiTypes.OBJECT},
-    parameters=[QUERY_PARAMETER_BALLPARK_GBN_TYPE],
+    parameters=[QUERY_PARAMETER_IS_BALLPARK_TYPE],
     examples=[
         OpenApiExample(
             name="Example",

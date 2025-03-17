@@ -253,11 +253,11 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 승리 많이 한 요일 산출
     def weekday_most_win(self, request):
         user = request.user
-        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+        team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         # 티켓에서 마이팀 해당되는것만 조회하기
         queryset = Ticket.objects.filter(
-            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id))
+            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id))
 
         service = TicketService()
         most_wins_day = service.calculate_weekday_wins(queryset)
@@ -270,7 +270,7 @@ class TicketsViewSet(
         team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         queryset = Ticket.objects.filter(
-            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id))
+            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id))
 
         service = TicketService()
         most_wins_ballpark = service.calculate_most_win_ballpark(queryset)
@@ -283,7 +283,7 @@ class TicketsViewSet(
         team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         queryset = Ticket.objects.filter(
-            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id))
+            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id))
 
         service = TicketService()
         most_wins_opponent = service.calculate_most_win_opponent(queryset)
@@ -297,7 +297,7 @@ class TicketsViewSet(
 
         # 티켓 승리 내역 가져오기
         queryset = Ticket.objects.filter(
-            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id)).annotate(
+            writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id)).annotate(
             prev_date=Window(
                 expression=Lag('date', 1),
                 partition_by=[F('writer')],
@@ -321,16 +321,12 @@ class TicketsViewSet(
 
         return Response({"longest_winning_streak": max_streak})
 
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) #집관&직관 경기 승률 퍼센티지 추산
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 집관 & 직관 경기 승률 퍼센티지 추산
     def win_percnet(self, request):
         user = request.user
-        ballpark_gbn = request.data.get('ballpark_gbn')
+        is_ballpark = request.data.get('is_ballpark')
 
-        if ballpark_gbn == "home" :
-            is_ballpark=False
-        elif ballpark_gbn == "site" :
-            is_ballpark = True
-            queryset = Ticket.objects.filter(writer=user, is_ballpark=is_ballpark)
+        queryset = Ticket.objects.filter(writer=user, is_ballpark=is_ballpark)
 
         total_games = queryset.count()
         wins = queryset.filter(result="승리").count()
