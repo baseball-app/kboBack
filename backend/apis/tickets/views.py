@@ -254,7 +254,7 @@ class TicketsViewSet(
 
         # 티켓에서 마이팀 해당되는것만 조회하기
         queryset = Ticket.objects.filter(
-            writer=user).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id)).aggregate(
+            writer=user).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id)).aggregate(
             win_count=Count(Case(When(result='승리', then=1), output_field=IntegerField())),
             loss_count=Count(Case(When(result='패배', then=1), output_field=IntegerField())),
             draw_count=Count(Case(When(result='무승부', then=1), output_field=IntegerField())),
