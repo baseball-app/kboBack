@@ -341,7 +341,9 @@ SWAGGER_LONGEST_WINNING_STREAK = extend_schema(
             name="Example",
             summary="Example input",
             description="연승기간 계산하여 숫자로 출력",
-            value={2}
+            value={
+                "longest_winning_streak" : 2,
+            }
         ),
     ],
 )

@@ -250,7 +250,7 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 경기 결과 통계 추산
     def win_rate_calculation(self, request):
         user = request.user
-        team_id = UserTeam.object.get(user_id=user).team_id #myTeam id 뽑아오기
+        team_id = UserTeam.objects.get(user_id=user).team_id #myTeam id 뽑아오기
 
         # 티켓에서 마이팀 해당되는것만 조회하기
         queryset = Ticket.objects.filter(
@@ -280,7 +280,7 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 승리 많이한 구장 산출
     def ballpark_most_win(self, request):
         user = request.user
-        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+        team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         queryset = Ticket.objects.filter(
             writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id))
@@ -293,7 +293,7 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated]) # 가장 상대로 승리 많이한 구단 산출
     def opponent_most_win(self, request):
         user = request.user
-        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+        team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         queryset = Ticket.objects.filter(
             writer=user, result="승리", is_cheer=True).filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id))
@@ -306,7 +306,7 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 긴 연승 기간 찾기
     def longest_winning_streak(self, request):
         user = request.user
-        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+        team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         # 티켓 승리 내역 가져오기
         queryset = Ticket.objects.filter(
