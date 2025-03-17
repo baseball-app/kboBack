@@ -105,41 +105,54 @@ class TicketsViewSet(
         serializer = TicketSerializer(tickets, many=True)  # 티켓 직렬화
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
+    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])  # 티켓 추가하기
     def ticket_add(self, request):
         user = request.user
         try:
+            # game_id 가져오기
             game_id = request.data.get('game')
-            if game_id == 0:
+
+            # game_id가 None, 빈 문자열, 공백 문자열인 경우 기본값 처리
+            if not game_id or str(game_id).strip() == "":
                 game = 1
                 ballpark_id = 1
                 opponent_id = 1
-            try:
-                game = Game.objects.get(id=game_id)
-                ballpark_id = game.ballpark.id
-                opponent_id = game.team_away.id
-            except Game.DoesNotExist:
-                return Response({'error': 'Invalid game ID'}, status=400)
+            else:
+                # game_id가 숫자인지 확인
+                if not str(game_id).isdigit():
+                    return Response({'error': 'game_id must be a valid number'}, status=400)
 
+                # game_id가 유효한 숫자인 경우 처리
+                game_id = int(game_id)
+                try:
+                    game = Game.objects.get(id=game_id)
+                    ballpark_id = game.ballpark.id
+                    opponent_id = game.team_away.id
+                except Game.DoesNotExist:
+                    return Response({'error': 'Invalid game ID'}, status=400)
+
+            # 요청 데이터 복사 및 game_id 설정
             data = request.data.copy()
-            data['game'] = game_id
+            data['game'] = game_id if game_id else 1  # 기본값 삽입
 
             # ticket 테이블에서 일치하는 date 값의 개수를 확인
-            match_count = Ticket.objects.filter(date=data['date'], writer=user).count()
+            match_count = Ticket.objects.filter(date=data.get('date'), writer=user).count()
 
             # 하루에 2건까지 추가 가능
             if match_count >= 2:
                 return Response({'error': '하루 티켓 발권 가능 갯수를 초과하였습니다.'}, status=400)
 
+            # Serializer를 사용해 데이터 유효성 검사 및 저장
             serializer = TicketAddSerializer(data=data, context={'request': request})
             if serializer.is_valid():
                 serializer.save(writer=user, ballpark=ballpark_id, opponent=opponent_id)
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors, status=400)
+
         except Exception as e:
             logger.error(f"Error occurred in ticket_add: {e}")
-            return Response({'error': str(e)}, status=500)
+            return Response({'error': f"An unexpected error occurred: {str(e)}"}, status=500)
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])  # 직관 일기 수정하기
     def ticket_upd(self, request):
