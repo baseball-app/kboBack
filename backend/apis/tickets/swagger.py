@@ -44,6 +44,14 @@ QUERY_PARAMETER_CALENDAR_USER_TYPE = OpenApiParameter(
     required=False,
 )
 
+QUERY_PARAMETER_TARGET_ID_TYPE = OpenApiParameter(
+    name="target_id",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="해당 하는 ID를 입력해주세요 본인일 경우 본인의 ID 친구일 경우 보고 싶은 티켓의 ID값을 입력해주시면 됩니다.",
+    required=False,
+)
+
 SWAGGER_TICKETS_FIND_FAVORITE = OpenApiParameter(
     name="favorite",
     type=str,
@@ -84,7 +92,8 @@ SWAGGER_TICKETS_DETAIL = extend_schema(
     summary="직관 일기 상세 보기",
     parameters=[
         QUERY_PARAMETER_DETAIL_TYPE,
-        QUERY_PARAMETER_CALENDAR_TYPE
+        QUERY_PARAMETER_CALENDAR_TYPE,
+        QUERY_PARAMETER_TARGET_ID_TYPE,
     ],
     description="직관 일기 상세 표기 표출",
     responses={

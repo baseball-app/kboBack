@@ -84,17 +84,18 @@ class TicketsViewSet(
         user = request.user
         ticket_id = request.query_params.get('id')
         ticket_date = request.query_params.get('date')
+        target_id = request.query_params.get('target_id')
 
         if ticket_id:
             try:
-                tickets = Ticket.objects.filter(id=ticket_id, writer=user)  # 해당 ID의 티켓 객체 가져오기
+                tickets = Ticket.objects.filter(id=ticket_id, writer=target_id)  # 해당 ID의 티켓 객체 가져오기
                 if not tickets.exists():
                     return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
             except Ticket.DoesNotExist:
                 return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
         elif ticket_date:
             try:
-                tickets = Ticket.objects.filter(date=ticket_date, writer=user)  # 해당 Date의 티켓 객체 가져오기
+                tickets = Ticket.objects.filter(date=ticket_date, writer=target_id)  # 해당 Date의 티켓 객체 가져오기
                 if not tickets.exists():
                     return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
             except Ticket.DoesNotExist:
