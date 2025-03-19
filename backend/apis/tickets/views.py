@@ -34,13 +34,13 @@ from apps.tickets.models import Ticket
 from apps.games.models import Game
 from apps.teams.models import UserTeam
 from apps.users.models import Friendship
-from conf.celery import create_multiple_notifications
 
 from .service import TicketService
 from django.db.models import Count, Case, When, IntegerField, F, Q
 from django.db.models import Window
 
 from django.db.models.functions import Lag
+from conf.celery import create_multiple_notifications
 
 import logging
 import datetime
@@ -96,17 +96,18 @@ class TicketsViewSet(
         user = request.user
         ticket_id = request.query_params.get("id")
         ticket_date = request.query_params.get("date")
+        target_id = request.query_params.get("target_id")
 
         if ticket_id:
             try:
-                tickets = Ticket.objects.filter(id=ticket_id, writer=user)  # 해당 ID의 티켓 객체 가져오기
+                tickets = Ticket.objects.filter(id=ticket_id, writer=target_id)  # 해당 ID의 티켓 객체 가져오기
                 if not tickets.exists():
                     return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
             except Ticket.DoesNotExist:
                 return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
         elif ticket_date:
             try:
-                tickets = Ticket.objects.filter(date=ticket_date, writer=user)  # 해당 Date의 티켓 객체 가져오기
+                tickets = Ticket.objects.filter(date=ticket_date, writer=target_id)  # 해당 Date의 티켓 객체 가져오기
                 if not tickets.exists():
                     return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
             except Ticket.DoesNotExist:
@@ -117,32 +118,44 @@ class TicketsViewSet(
         serializer = TicketSerializer(tickets, many=True)  # 티켓 직렬화
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
+    @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])  # 티켓 추가하기
     def ticket_add(self, request):
         user = request.user
         try:
+            # game_id 가져오기
             game_id = request.data.get("game")
-            if game_id == 0:
+
+            # game_id가 None, 빈 문자열, 공백 문자열인 경우 기본값 처리
+            if not game_id or str(game_id).strip() == "":
                 game = 1
                 ballpark_id = 1
                 opponent_id = 1
-            try:
-                game = Game.objects.get(id=game_id)
-                ballpark_id = game.ballpark.id
-                opponent_id = game.team_away.id
-            except Game.DoesNotExist:
-                return Response({"error": "Invalid game ID"}, status=400)
+            else:
+                # game_id가 숫자인지 확인
+                if not str(game_id).isdigit():
+                    return Response({"error": "game_id must be a valid number"}, status=400)
 
+                # game_id가 유효한 숫자인 경우 처리
+                game_id = int(game_id)
+                try:
+                    game = Game.objects.get(id=game_id)
+                    ballpark_id = game.ballpark.id
+                    opponent_id = game.team_away.id
+                except Game.DoesNotExist:
+                    return Response({"error": "Invalid game ID"}, status=400)
+
+            # 요청 데이터 복사 및 game_id 설정
             data = request.data.copy()
-            data["game"] = game_id
+            data["game"] = game_id if game_id else 1  # 기본값 삽입
 
             # ticket 테이블에서 일치하는 date 값의 개수를 확인
-            match_count = Ticket.objects.filter(date=data["date"], writer=user).count()
+            match_count = Ticket.objects.filter(date=data.get("date"), writer=user).count()
 
             # 하루에 2건까지 추가 가능
             if match_count >= 2:
                 return Response({"error": "하루 티켓 발권 가능 갯수를 초과하였습니다."}, status=400)
 
+            # Serializer를 사용해 데이터 유효성 검사 및 저장
             serializer = TicketAddSerializer(data=data, context={"request": request})
             if serializer.is_valid():
                 ticket = serializer.save(writer=user, ballpark=ballpark_id, opponent=opponent_id)
@@ -160,9 +173,10 @@ class TicketsViewSet(
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors, status=400)
+
         except Exception as e:
             logger.error(f"Error occurred in ticket_add: {e}")
-            return Response({"error": str(e)}, status=500)
+            return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])  # 직관 일기 수정하기
     def ticket_upd(self, request):
@@ -254,12 +268,12 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 경기 결과 통계 추산
     def win_rate_calculation(self, request):
         user = request.user
-        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+        team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         # 티켓에서 마이팀 해당되는것만 조회하기
         queryset = (
             Ticket.objects.filter(writer=user)
-            .filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id))
+            .filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id))
             .aggregate(
                 win_count=Count(Case(When(result="승리", then=1), output_field=IntegerField())),
                 loss_count=Count(Case(When(result="패배", then=1), output_field=IntegerField())),
@@ -273,11 +287,11 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 승리 많이 한 요일 산출
     def weekday_most_win(self, request):
         user = request.user
-        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+        team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         # 티켓에서 마이팀 해당되는것만 조회하기
         queryset = Ticket.objects.filter(writer=user, result="승리", is_cheer=True).filter(
-            Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id)
+            Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id)
         )
 
         service = TicketService()
@@ -288,10 +302,10 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 승리 많이한 구장 산출
     def ballpark_most_win(self, request):
         user = request.user
-        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+        team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         queryset = Ticket.objects.filter(writer=user, result="승리", is_cheer=True).filter(
-            Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id)
+            Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id)
         )
 
         service = TicketService()
@@ -302,10 +316,10 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 상대로 승리 많이한 구단 산출
     def opponent_most_win(self, request):
         user = request.user
-        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+        team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         queryset = Ticket.objects.filter(writer=user, result="승리", is_cheer=True).filter(
-            Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id)
+            Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id)
         )
 
         service = TicketService()
@@ -316,12 +330,12 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 긴 연승 기간 찾기
     def longest_winning_streak(self, request):
         user = request.user
-        team_id = UserTeam.object.get(user_id=user).team_id  # myTeam id 뽑아오기
+        team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         # 티켓 승리 내역 가져오기
         queryset = (
             Ticket.objects.filter(writer=user, result="승리", is_cheer=True)
-            .filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(home_team_id=team_id) | Q(away_team_id=team_id))
+            .filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id))
             .annotate(prev_date=Window(expression=Lag("date", 1), partition_by=[F("writer")], order_by=F("date").asc()))
             .order_by("date")
         )
@@ -342,16 +356,12 @@ class TicketsViewSet(
 
         return Response({"longest_winning_streak": max_streak})
 
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 집관&직관 경기 승률 퍼센티지 추산
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 집관 & 직관 경기 승률 퍼센티지 추산
     def win_percnet(self, request):
         user = request.user
-        ballpark_gbn = request.data.get("ballpark_gbn")
+        is_ballpark = request.data.get("is_ballpark")
 
-        if ballpark_gbn == "home":
-            is_ballpark = False
-        elif ballpark_gbn == "site":
-            is_ballpark = True
-            queryset = Ticket.objects.filter(writer=user, is_ballpark=is_ballpark)
+        queryset = Ticket.objects.filter(writer=user, is_ballpark=is_ballpark)
 
         total_games = queryset.count()
         wins = queryset.filter(result="승리").count()
