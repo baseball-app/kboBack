@@ -62,7 +62,7 @@ SWAGGER_TICKETS_FIND_FAVORITE = OpenApiParameter(
 )
 
 SWAGGER_TICKETS_FIND_CHEER = OpenApiParameter(
-    name="cheer",
+    name="is_cheer",
     type=str,
     location=OpenApiParameter.QUERY,
     description="타팀 경기를 확인하고 싶은 경우 해당 값에 True를 넣어주세요.",
@@ -239,6 +239,20 @@ SWAGGER_TICKETS_DEL = extend_schema(
             }
         ),
     ],
+)
+
+SWAGGER_TICKETS_REACTION_VIEW = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="지정 티켓 반응 보기",
+    parameters=[
+        QUERY_PARAMETER_TARGET_ID_TYPE,
+    ],
+    description="지정된 티켓의 반응 갯수가 몇개 있는지 노출합니다.",
+    responses={
+        200: OpenApiExample(
+            "Success Response", value=[], response_only=True, status_codes=["200"]
+        ),
+    },
 )
 
 SWAGGER_TICKETS_REACTION = extend_schema(

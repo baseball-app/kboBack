@@ -11,12 +11,14 @@ from apis.tickets.serializers import TicketListSerializer
 from apis.tickets.serializers import TicketUpdSerializer
 from apis.tickets.serializers import TicketAddSerializer
 from apis.tickets.serializers import TicketCalendarSerializer
+from apis.tickets.serializers import TicketReactionSerializer
 
 from apis.tickets.swagger import (
     SWAGGER_TICKETS_ADD,
     SWAGGER_TICKETS_UPD,
     SWAGGER_TICKETS_DEL,
     SWAGGER_TICKETS_LIST,
+    SWAGGER_TICKETS_REACTION_VIEW,
     SWAGGER_TICKETS_REACTION,
     SWAGGER_TICKETS_DETAIL,
     SWAGGER_WIN_RATE_CALCULATION,
@@ -53,6 +55,7 @@ logger = logging.getLogger(__name__)
     ticket_upd=SWAGGER_TICKETS_UPD,
     ticket_del=SWAGGER_TICKETS_DEL,
     ticket_list=SWAGGER_TICKETS_LIST,
+    ticket_reaction_view=SWAGGER_TICKETS_REACTION_VIEW,
     ticket_reaction=SWAGGER_TICKETS_REACTION,
     ticket_detail=SWAGGER_TICKETS_DETAIL,
     ticket_favorite=SWAGGER_TICKETS_FAVORITE,
@@ -68,23 +71,52 @@ logger = logging.getLogger(__name__)
 class TicketsViewSet(
     GenericViewSet,
 ):
+
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 직관 일기 리스트로 보기
     def ticket_list(self, request):
         try:
             user = request.user
-            queryset = Ticket.objects.all()
-            team_id = self.request.query_params.get("team_id")
-            favorite = self.request.query_params.get("favorite") == "True"
-            cheer = self.request.query_params.get("cheer") == "True"
 
-            if favorite:  # 최애 경기 픽했을 경우
-                queryset = queryset.filter(writer=user, favorite=True)
-            elif cheer:  # 마이팀이 아닌 타팀 경기 픽했을 경우
-                queryset = queryset.filter(writer=user, cheer=True)
-            elif team_id:  # 팀 별로 골라보기
-                queryset = queryset.filter(writer=user, team_id=team_id)
+            # 쿼리 파라미터 가져오기
+            team_id = self.request.query_params.get("team_id")  # Team ID 입력값
 
-            serializer = TicketListSerializer(queryset, many=True)  # 쿼리셋 직렬화
+            # team_id가 비어 있는 경우 처리
+            if not team_id or team_id.strip() == "":
+                team_id = None  # 빈값을 None으로 처리
+
+            # 쿼리셋 초기화
+            queryset = Ticket.objects.none()
+
+            # 쿼리 파라미터 가져오기 및 변환
+            favorite = self.request.query_params.get("favorite", "").lower()
+            is_cheer = self.request.query_params.get("is_cheer", "").lower()
+
+            if favorite == 'true':
+                favorite = True
+            else:
+                favorite = False
+
+            if is_cheer == 'true':
+                is_cheer = True
+            else:
+                is_cheer = False
+
+            if team_id:
+                logger.info("team_id ::", team_id)
+                queryset = Ticket.objects.filter(
+                    writer=user,  # 작성자 필터링
+                    is_cheer=True,  # is_cheer 조건 강제
+                    favorite=favorite
+                ).filter(
+                    Q(ballpark__team__id=team_id) |  # Ballpark와 연결된 Team ID 필터링
+                    Q(opponent__id=team_id)  # Opponent ID 필터링
+                )
+            else:
+                # team_id가 없는 경우 기본 필터링 조건만 적용
+                queryset = Ticket.objects.filter(writer=user, is_cheer=is_cheer, favorite=favorite)
+
+            # 직렬화 및 응답 반환
+            serializer = TicketListSerializer(queryset.distinct(), many=True)
             return Response(serializer.data)
 
         except Exception as e:
@@ -214,6 +246,21 @@ class TicketsViewSet(
             return Response({"error": "해당 티켓을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 티켓 반응 보기 (단건)
+    def ticket_reaction_view(self, request):
+        target_id = request.query_params.get("target_id")
+
+        try:
+            # 단건 조회
+            ticket = Ticket.objects.get(id=target_id)
+        except Ticket.DoesNotExist:
+            return Response({"message": "티켓을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+        # 단건 직렬화
+        serializer = TicketReactionSerializer(ticket)  # many=False (default)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])  # 티켓에 반응 추가/삭제하기
     def ticket_reaction(self, request):
