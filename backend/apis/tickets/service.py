@@ -9,6 +9,8 @@ from django.db.models import Count
 import logging
 import base64
 import uuid
+import requests
+from urllib.parse import urlparse
 from datetime import datetime
 from io import BytesIO
 import boto3
@@ -21,20 +23,24 @@ class TicketService:
     def add_reaction(self, ticket_id,reaction_type):
         try:
             ticket = Ticket.objects.get(id=ticket_id)
-            if reaction_type == "like":
-                ticket.like += 1
-            elif reaction_type == "love":
-                ticket.love += 1
-            elif reaction_type == "haha":
-                ticket.haha += 1
-            elif reaction_type == "yay":
-                ticket.yay += 1
-            elif reaction_type == "wow":
-                ticket.wow += 1
-            elif reaction_type == "sad":
-                ticket.sad += 1
-            elif reaction_type == "angry":
-                ticket.angry += 1
+            if reaction_type == "laugh":
+                ticket.laugh += 1
+            elif reaction_type == "wink":
+                ticket.wink += 1
+            elif reaction_type == "good":
+                ticket.good += 1
+            elif reaction_type == "clap":
+                ticket.clap += 1
+            elif reaction_type == "point_up":
+                ticket.point_up += 1
+            elif reaction_type == "petulance":
+                ticket.petulance += 1
+            elif reaction_type == "confused":
+                ticket.confused += 1
+            elif reaction_type == "dislike":
+                ticket.confused += 1
+            elif reaction_type == "rage":
+                ticket.confused += 1
             ticket.save()
         except Ticket.DoesNotExist:
             raise ValueError("티켓을 찾을 수 없습니다.")
@@ -42,20 +48,24 @@ class TicketService:
     def del_reaction(self, ticket_id,reaction_type):
         try:
             ticket = Ticket.objects.get(id=ticket_id)
-            if reaction_type == "like":
-                ticket.like -= 1
-            elif reaction_type == "love":
-                ticket.love -= 1
-            elif reaction_type == "haha":
-                ticket.haha -= 1
-            elif reaction_type == "yay":
-                ticket.yay -= 1
-            elif reaction_type == "wow":
-                ticket.wow -= 1
-            elif reaction_type == "sad":
-                ticket.sad -= 1
-            elif reaction_type == "angry":
-                ticket.angry -= 1
+            if reaction_type == "laugh":
+                ticket.laugh -= 1
+            elif reaction_type == "wink":
+                ticket.wink -= 1
+            elif reaction_type == "good":
+                ticket.good -= 1
+            elif reaction_type == "clap":
+                ticket.clap -= 1
+            elif reaction_type == "point_up":
+                ticket.point_up -= 1
+            elif reaction_type == "petulance":
+                ticket.petulance -= 1
+            elif reaction_type == "confused":
+                ticket.confused -= 1
+            elif reaction_type == "dislike":
+                ticket.petulance -= 1
+            elif reaction_type == "rage":
+                ticket.confused -= 1
             ticket.save()
         except Ticket.DoesNotExist:
             raise ValueError("티켓을 찾을 수 없습니다.")
@@ -133,6 +143,12 @@ class TicketService:
             aws_secret_access_key=settings.AWS_S3_SECRET_KEY,
         )
 
+        # image가 URL인지 확인
+        if isinstance(image, str) and (image.startswith("http://") or image.startswith("https://")):
+            response = requests.get(image, stream=True)  # URL에서 이미지 다운로드
+            response.raise_for_status()
+            image = BytesIO(response.content)  # 파일 객체로 변환
+
         img = Image.open(image)
 
         if img.mode != "RGB":
@@ -147,9 +163,13 @@ class TicketService:
             image_byte_array,
             settings.AWS_S3_STORAGE_BUCKET_NAME,
             file_key,
-            ExtraArgs={"ContentType": image.content_type},
+            ExtraArgs={
+                "ContentType": "image/jpeg",  # MIME 타입 설정
+                "ACL": "public-read"  # 퍼블릭 접근 허용
+            },
         )
 
         return f"{settings.AWS_S3_CUSTOM_DOMAIN}{file_key}"
+
 
 

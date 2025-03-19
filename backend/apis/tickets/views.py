@@ -307,7 +307,6 @@ class TicketsViewSet(
         queryset = Ticket.objects.filter(writer=user, result="승리", is_cheer=True).filter(
             Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id)
         )
-
         service = TicketService()
         most_wins_ballpark = service.calculate_most_win_ballpark(queryset)
 
@@ -339,7 +338,6 @@ class TicketsViewSet(
             .annotate(prev_date=Window(expression=Lag("date", 1), partition_by=[F("writer")], order_by=F("date").asc()))
             .order_by("date")
         )
-
         # 가장 긴 연승 기간 계산
         max_streak = 0
         current_streak = 0

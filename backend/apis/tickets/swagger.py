@@ -44,6 +44,14 @@ QUERY_PARAMETER_CALENDAR_USER_TYPE = OpenApiParameter(
     required=False,
 )
 
+QUERY_PARAMETER_TARGET_ID_TYPE = OpenApiParameter(
+    name="target_id",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="해당 하는 ID를 입력해주세요 본인일 경우 본인의 ID 친구일 경우 보고 싶은 티켓의 ID값을 입력해주시면 됩니다.",
+    required=False,
+)
+
 SWAGGER_TICKETS_FIND_FAVORITE = OpenApiParameter(
     name="favorite",
     type=str,
@@ -84,7 +92,8 @@ SWAGGER_TICKETS_DETAIL = extend_schema(
     summary="직관 일기 상세 보기",
     parameters=[
         QUERY_PARAMETER_DETAIL_TYPE,
-        QUERY_PARAMETER_CALENDAR_TYPE
+        QUERY_PARAMETER_CALENDAR_TYPE,
+        QUERY_PARAMETER_TARGET_ID_TYPE,
     ],
     description="직관 일기 상세 표기 표출",
     responses={
@@ -242,12 +251,11 @@ SWAGGER_TICKETS_REACTION = extend_schema(
         OpenApiExample(
             name="Example 4",
             summary="Example input",
-            description="티켓 반응 추가하거나 삭제하는 예시입니다. \n reaction_pos는 추가 시 add 삭제 시 del 기입 , "
-                        "\n reaction_type는 like,love,haha,yay,wow,sad,angry 기입 가능",
+            description="티켓 반응 추가하거나 삭제하는 예시입니다. \n reaction_pos는 추가 시 add 삭제 시 del 기입 ",
             value={
                 "id": 1,
                 "reaction_pos": "add",
-                "reaction_type": "like",
+                "reaction_type": "rage",
             }
         ),
     ],
@@ -342,12 +350,14 @@ SWAGGER_LONGEST_WINNING_STREAK = extend_schema(
             name="Example",
             summary="Example input",
             description="연승기간 계산하여 숫자로 출력",
-            value={2}
+            value={
+                "longest_winning_streak" : 2,
+            }
         ),
     ],
 )
 
-QUERY_PARAMETER_BALLPARK_GBN_TYPE = OpenApiParameter(
+QUERY_PARAMETER_IS_BALLPARK_TYPE = OpenApiParameter(
     name="ballpark_gbn",
     type=str,
     location=OpenApiParameter.QUERY,
@@ -360,7 +370,7 @@ SWAGGER_WIN_PERCENT = extend_schema(
     summary="직관 승률 표출",
     description="직관으로 찍은 티켓의 총 승률을 계산합니다",
     responses={200: OpenApiTypes.OBJECT},
-    parameters=[QUERY_PARAMETER_BALLPARK_GBN_TYPE],
+    parameters=[QUERY_PARAMETER_IS_BALLPARK_TYPE],
     examples=[
         OpenApiExample(
             name="Example",
