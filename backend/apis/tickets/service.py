@@ -38,9 +38,9 @@ class TicketService:
             elif reaction_type == "confused":
                 ticket.confused += 1
             elif reaction_type == "dislike":
-                ticket.confused += 1
+                ticket.dislike += 1
             elif reaction_type == "rage":
-                ticket.confused += 1
+                ticket.rage += 1
             ticket.save()
         except Ticket.DoesNotExist:
             raise ValueError("티켓을 찾을 수 없습니다.")
@@ -63,9 +63,9 @@ class TicketService:
             elif reaction_type == "confused":
                 ticket.confused -= 1
             elif reaction_type == "dislike":
-                ticket.petulance -= 1
+                ticket.dislike -= 1
             elif reaction_type == "rage":
-                ticket.confused -= 1
+                ticket.rage -= 1
             ticket.save()
         except Ticket.DoesNotExist:
             raise ValueError("티켓을 찾을 수 없습니다.")
