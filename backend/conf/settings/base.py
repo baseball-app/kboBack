@@ -232,6 +232,5 @@ sentry_sdk.init(
         DjangoIntegration(),
     ],
     traces_sample_rate=1.0,
-    send_default_pii=True,
-    request_bodies="always"
+    send_default_pii=True
 )
