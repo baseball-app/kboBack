@@ -30,11 +30,6 @@ class NotificationsViewSet(
     serializer_class = NotificationSerializer
 
     def get_queryset(self):
-        if self.action == "list":
-            friends = self.request.user.friendships_source.values_list("target", flat=True)
-            target_ids = [self.request.user.id] + [friends]
-
-            return Notification.objects.filter(user__id__in=target_ids)
         return Notification.objects.filter(user=self.request.user)
 
     def list(self, request, *args, **kwargs):
