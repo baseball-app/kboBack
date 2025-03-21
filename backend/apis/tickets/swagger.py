@@ -324,16 +324,16 @@ SWAGGER_WEEKDAY_MOST_WIN = extend_schema(
     ],
 )
 
-SWAGGER_BALLPARK_MOST_WIN = extend_schema(
+SWAGGER_BALLPARK_MOST_VIEW = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
-    summary="최다 승리 구장 표출",
-    description="그동안 티켓들의 가장 승리가 많은 구장을 보여줍니다",
+    summary="최다 관람 구장 표출",
+    description="그동안 가장 많이 티켓을 남긴 구단을 보여줍니다",
     responses={200: OpenApiTypes.OBJECT},
     examples=[
         OpenApiExample(
             name="Example",
             summary="Example input",
-            description="승리 티켓 확인하여 가장 승리가 많은 구장 명 출력",
+            description="티켓 확인하여 가장 관람이력이 많은 구장 명 출력",
             value={"most_wins_ballpark": "창원NC파크"}
         ),
     ],

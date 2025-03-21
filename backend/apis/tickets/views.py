@@ -24,7 +24,7 @@ from apis.tickets.swagger import (
     SWAGGER_WIN_RATE_CALCULATION,
     SWAGGER_TICKETS_FAVORITE,
     SWAGGER_WEEKDAY_MOST_WIN,
-    SWAGGER_BALLPARK_MOST_WIN,
+    SWAGGER_BALLPARK_MOST_VIEW,
     SWAGGER_OPPONENT_MOST_WIN,
     SWAGGER_LONGEST_WINNING_STREAK,
     SWAGGER_WIN_PERCENT,
@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
     ticket_favorite=SWAGGER_TICKETS_FAVORITE,
     win_rate_calculation=SWAGGER_WIN_RATE_CALCULATION,
     weekday_most_win=SWAGGER_WEEKDAY_MOST_WIN,
-    ballpark_most_win=SWAGGER_BALLPARK_MOST_WIN,
+    ballpark_most_view=SWAGGER_BALLPARK_MOST_VIEW,
     opponent_most_win=SWAGGER_OPPONENT_MOST_WIN,
     longest_winning_streak=SWAGGER_LONGEST_WINNING_STREAK,
     win_percnet=SWAGGER_WIN_PERCENT,
@@ -346,14 +346,12 @@ class TicketsViewSet(
 
         return Response({"most_wins_day": most_wins_day})
 
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 승리 많이한 구장 산출
-    def ballpark_most_win(self, request):
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 많이 관람한 구장 산출
+    def ballpark_most_view(self, request):
         user = request.user
-        team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
+        #team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
-        queryset = Ticket.objects.filter(writer=user, result="승리", is_cheer=True).filter(
-            Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id)
-        )
+        queryset = Ticket.objects.filter(writer=user, is_ballpark=True)
         service = TicketService()
         most_wins_ballpark = service.calculate_most_win_ballpark(queryset)
 
