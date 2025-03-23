@@ -222,7 +222,15 @@ class TicketsViewSet(
             except Ticket.DoesNotExist:
                 return Response({"detail": "티켓을 찾지 못하였습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-            serializer = TicketUpdSerializer(ticket, data=request.data, partial=True, context={"request": request})
+            # 입력 데이터 복사 후 image 필드 제거 조건 적용
+            updated_data = request.data.copy()
+            input_image = updated_data.get("image")
+
+            # 기존 image와 동일하면 업데이트 항목에서 제거
+            if input_image and ticket.image == input_image:
+                updated_data.pop("image")
+
+            serializer = TicketUpdSerializer(ticket, data=updated_data, partial=True, context={"request": request})
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=200)
@@ -230,7 +238,7 @@ class TicketsViewSet(
                 return Response(serializer.errors, status=400)
 
         except Exception as e:
-            return Response({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])  # 티켓 삭제
     def ticket_del(self, request):
@@ -317,9 +325,9 @@ class TicketsViewSet(
         user = request.user
         team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
-        # 티켓에서 마이팀 해당되는것만 조회하기
-        queryset = (
-            Ticket.objects.filter(writer=user)
+        # 티켓에서 마이팀 해당되는것만 조회하기(직관)
+        queryset_is_ballpark = (
+            Ticket.objects.filter(writer=user, is_ballpark=True)
             .filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id))
             .aggregate(
                 win_count=Count(Case(When(result="승리", then=1), output_field=IntegerField())),
@@ -329,7 +337,24 @@ class TicketsViewSet(
             )
         )
 
-        return Response(queryset)
+        # 티켓에서 마이팀 해당되는것만 조회하기(집관)
+        queryset_is_not_ballpark = (
+            Ticket.objects.filter(writer=user, is_ballpark=False)
+            .filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id))
+            .aggregate(
+                win_count=Count(Case(When(result="승리", then=1), output_field=IntegerField())),
+                loss_count=Count(Case(When(result="패배", then=1), output_field=IntegerField())),
+                draw_count=Count(Case(When(result="무승부", then=1), output_field=IntegerField())),
+                cancel_count=Count(Case(When(result="취소", then=1), output_field=IntegerField())),
+            )
+        )
+
+        result = {
+            "is_ballpark_win_rate": queryset_is_ballpark,
+            "is_not_ballpark_win_rate": queryset_is_not_ballpark
+        }
+
+        return Response(result, status=200)
 
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 승리 많이 한 요일 산출
     def weekday_most_win(self, request):
@@ -402,9 +427,15 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 집관 & 직관 경기 승률 퍼센티지 추산
     def win_percnet(self, request):
         user = request.user
-        is_ballpark = request.data.get("is_ballpark")
+        team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
-        queryset = Ticket.objects.filter(writer=user, is_ballpark=is_ballpark)
+        is_ballpark = request.query_params.get("is_ballpark")
+
+        if isinstance(is_ballpark, str):
+            is_ballpark = is_ballpark.lower() == 'true'
+
+        queryset = (Ticket.objects.filter(writer=user, is_ballpark=is_ballpark, is_cheer=True)
+                    .filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id)))
 
         total_games = queryset.count()
         wins = queryset.filter(result="승리").count()
@@ -414,7 +445,7 @@ class TicketsViewSet(
         else:
             win_percent = int((wins / total_games) * 100)
 
-        return Response(win_percent)
+        return Response({"win_percent": win_percent}, status=200)
 
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
     def ticket_calendar_log(self, request):

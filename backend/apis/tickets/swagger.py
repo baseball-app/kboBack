@@ -305,10 +305,18 @@ SWAGGER_WIN_RATE_CALCULATION = extend_schema(
             summary="Example input",
             description="승리 횟수, 패배 횟수, 무승부 횟수, 취소 횟수를 int로 출력합니다",
             value={
-              "win_count": 2,
-              "loss_count": 0,
-              "draw_count": 0,
-              "cancel_count": 0
+                "is_ballpark_win_rate": {
+                    "win_count": 1,
+                    "loss_count": 0,
+                    "draw_count": 0,
+                    "cancel_count": 0
+                },
+                "is_not_ballpark_win_rate": {
+                    "win_count": 0,
+                    "loss_count": 2,
+                    "draw_count": 0,
+                    "cancel_count": 0
+                }
             }
         ),
     ],
@@ -372,7 +380,7 @@ SWAGGER_LONGEST_WINNING_STREAK = extend_schema(
 )
 
 QUERY_PARAMETER_IS_BALLPARK_TYPE = OpenApiParameter(
-    name="ballpark_gbn",
+    name="is_ballpark",
     type=str,
     location=OpenApiParameter.QUERY,
     description="직관인지 집관인지 값을 통해 구분해주세요. 직관일 경우 True , 집관일 경우 False",

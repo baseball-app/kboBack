@@ -149,18 +149,9 @@ class TicketService:
             response.raise_for_status()
             image = BytesIO(response.content)  # 파일 객체로 변환
 
-        img = Image.open(image)
-
-        if img.mode != "RGB":
-            img = img.convert("RGB")
-
-        image_byte_array = BytesIO()
-        img_resized = img.resize((110, 110))
-        img_resized.save(image_byte_array, format="JPEG", quality=50, optimize=True)
-        image_byte_array.seek(0)
-
+        # 원본 이미지를 그대로 사용
         s3.upload_fileobj(
-            image_byte_array,
+            image,
             settings.AWS_S3_STORAGE_BUCKET_NAME,
             file_key,
             ExtraArgs={
