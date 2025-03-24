@@ -1,11 +1,12 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q, Count
 from django.utils.timezone import localtime, now
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, Serializer
 
 from apis.teams.serializers import TeamsSerializer
+from apps.games.models import Game
 from apps.teams.models import UserTeam
 from apps.tickets.models import Ticket
 from apps.users.models import Friendship
@@ -48,8 +49,28 @@ class UserInfoSerializer(Serializer):
         return f"{settings.AWS_S3_CUSTOM_DOMAIN}{obj.profile_image}" if obj.profile_image else ""
 
     def get_predict_ratio(self, obj):
-        # todo: tickets 관련 처리 후 작업
-        return 1
+        user_team = UserTeam.objects.filter(user=obj).last()
+        if not user_team:
+            return 0
+
+        team = user_team.team
+
+        tickets = Ticket.objects.filter(
+            writer=obj,
+            game__in=Game.objects.filter(
+                Q(team_home=team) | Q(team_away=team)
+            )
+        )
+
+        counts = tickets.aggregate(
+            total=Count('id'),
+            wins=Count('id', filter=Q(result=Ticket.RESULT1))
+        )
+
+        total = counts['total']
+        wins = counts['wins']
+
+        return round(wins / total * 100, 2) if total else 0
 
     def get_my_team(self, obj):
         user_team = UserTeam.objects.filter(user=obj).last()
