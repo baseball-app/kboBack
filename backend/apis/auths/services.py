@@ -166,7 +166,7 @@ class AppleAuthService(AuthService):
             data={
                 "grant_type": grant_type,
                 "code": code,
-                "redirect_uri": {redirect_uri},
+                # "redirect_uri": {redirect_uri},
                 "client_id": client_id,
                 "client_secret": client_secret
             }
