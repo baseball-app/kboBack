@@ -13,6 +13,8 @@ class KakaoInputSerializer(Serializer):
 
 
 class AppleInputSerializer(Serializer):
+    native = serializers.BooleanField()
+    id_token = serializers.CharField()
     code = serializers.CharField(max_length=255, required=True)
     state = serializers.CharField(max_length=255, required=False)
 

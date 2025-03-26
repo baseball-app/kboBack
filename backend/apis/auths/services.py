@@ -129,6 +129,8 @@ class KakaoAuthService(AuthService):
 
 class AppleAuthService(AuthService):
     def get_social_user(self, data):
+        if data.get('native'):
+            return self._get_user_info("", data.get('id_token'))
         access_token, id_token = self._get_access_token(data)
         if not access_token or not id_token:
             return None
