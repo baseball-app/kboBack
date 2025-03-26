@@ -293,6 +293,16 @@ class TicketsViewSet(
         if reaction_pos == "add":  # 반응 추가
             service.add_reaction(ticket_identifier, reaction_type)
             message = "반응 추가 성공"
+
+            notification_message = f"{user.nickname}님이 반응을 남겼습니다."
+            create_multiple_notifications.delay(
+                me=user.id,
+                user_ids=[ticket.writer.id],
+                notification_type=NOTIFICATION_TYPE.FRIEND_FEEDBACK,
+                message=notification_message,
+                ticket_id=ticket.id,
+            )
+
         elif reaction_pos == "del":  # 반응 삭제
             service.del_reaction(ticket_identifier, reaction_type)
             message = "반응 삭제 성공"
