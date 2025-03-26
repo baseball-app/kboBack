@@ -15,13 +15,12 @@ class NotificationUserInfoSerializer(ModelSerializer):
 
 
 class NotificationSerializer(ModelSerializer):
-    user_info = NotificationUserInfoSerializer(read_only=True, source="user")
+    user_info = NotificationUserInfoSerializer(read_only=True, source="feedback_user")
 
     class Meta:
         model = Notification
         fields = [
             "id",
-            "user",
             "user_info",
             "ticket",
             "type",

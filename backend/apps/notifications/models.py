@@ -5,6 +5,9 @@ from base.models import TimeStampModel
 
 
 class Notification(TimeStampModel):
+    feedback_user = models.ForeignKey(
+        "users.User", related_name="notifications_feedback", on_delete=models.SET_NULL, null=True
+    )
     user = models.ForeignKey("users.User", related_name="notifications", on_delete=models.CASCADE)
     ticket = models.ForeignKey("tickets.Ticket", related_name="notifications", on_delete=models.SET_NULL, null=True)
     message = models.TextField()

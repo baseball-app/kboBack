@@ -12,6 +12,7 @@ django.setup()
 
 from apps.tickets.models import Ticket
 from apps.notifications.models import Notification
+from apps.users.models import User
 
 app = Celery("conf")
 
@@ -20,12 +21,13 @@ app.autodiscover_tasks()
 
 
 @shared_task(bind=True)
-def create_multiple_notifications(self, user_ids, notification_type, message, ticket_id):
+def create_multiple_notifications(self, me, user_ids, notification_type, message, ticket_id):
     try:
         with transaction.atomic():
             ticket = Ticket.objects.get(pk=ticket_id)
+            me = User.objects.get(pk=me)
             notifications = [
-                Notification(user_id=user_id, type=notification_type, message=message, ticket=ticket)
+                Notification(feedback_user=me, user_id=user_id, type=notification_type, message=message, ticket=ticket)
                 for user_id in user_ids
             ]
             Notification.objects.bulk_create(notifications)

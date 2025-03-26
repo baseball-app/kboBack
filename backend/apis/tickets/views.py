@@ -71,7 +71,6 @@ logger = logging.getLogger(__name__)
 class TicketsViewSet(
     GenericViewSet,
 ):
-
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 직관 일기 리스트로 보기
     def ticket_list(self, request):
         try:
@@ -91,12 +90,12 @@ class TicketsViewSet(
             favorite = self.request.query_params.get("favorite", "").lower()
             is_cheer = self.request.query_params.get("is_cheer", "").lower()
 
-            if favorite == 'true':
+            if favorite == "true":
                 favorite = True
             else:
                 favorite = False
 
-            if is_cheer == 'true':
+            if is_cheer == "true":
                 is_cheer = True
             else:
                 is_cheer = False
@@ -106,10 +105,10 @@ class TicketsViewSet(
                 queryset = Ticket.objects.filter(
                     writer=user,  # 작성자 필터링
                     is_cheer=True,  # is_cheer 조건 강제
-                    favorite=favorite
+                    favorite=favorite,
                 ).filter(
-                    Q(ballpark__team__id=team_id) |  # Ballpark와 연결된 Team ID 필터링
-                    Q(opponent__id=team_id)  # Opponent ID 필터링
+                    Q(ballpark__team__id=team_id)  # Ballpark와 연결된 Team ID 필터링
+                    | Q(opponent__id=team_id)  # Opponent ID 필터링
                 )
             else:
                 # team_id가 없는 경우 기본 필터링 조건만 적용
@@ -193,10 +192,10 @@ class TicketsViewSet(
                 ticket = serializer.save(writer=user, ballpark=ballpark_id, opponent=opponent_id)
 
                 friend_ids = list(Friendship.objects.filter(source=user).values_list("target_id", flat=True))
-
                 if friend_ids:
                     message = f"{user.nickname}님이 새로운 티켓을 등록했습니다."
                     create_multiple_notifications.delay(
+                        me=user.id,
                         user_ids=friend_ids,
                         notification_type=NOTIFICATION_TYPE.FRIEND_UPDATE,
                         message=message,
@@ -349,10 +348,7 @@ class TicketsViewSet(
             )
         )
 
-        result = {
-            "is_ballpark_win_rate": queryset_is_ballpark,
-            "is_not_ballpark_win_rate": queryset_is_not_ballpark
-        }
+        result = {"is_ballpark_win_rate": queryset_is_ballpark, "is_not_ballpark_win_rate": queryset_is_not_ballpark}
 
         return Response(result, status=200)
 
@@ -374,7 +370,7 @@ class TicketsViewSet(
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 가장 많이 관람한 구장 산출
     def ballpark_most_view(self, request):
         user = request.user
-        #team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
+        # team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
         queryset = Ticket.objects.filter(writer=user, is_ballpark=True)
         service = TicketService()
@@ -432,10 +428,11 @@ class TicketsViewSet(
         is_ballpark = request.query_params.get("is_ballpark")
 
         if isinstance(is_ballpark, str):
-            is_ballpark = is_ballpark.lower() == 'true'
+            is_ballpark = is_ballpark.lower() == "true"
 
-        queryset = (Ticket.objects.filter(writer=user, is_ballpark=is_ballpark, is_cheer=True)
-                    .filter(Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id)))
+        queryset = Ticket.objects.filter(writer=user, is_ballpark=is_ballpark, is_cheer=True).filter(
+            Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id)
+        )
 
         total_games = queryset.count()
         wins = queryset.filter(result="승리").count()
