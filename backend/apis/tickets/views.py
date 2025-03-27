@@ -90,15 +90,22 @@ class TicketsViewSet(
             favorite = self.request.query_params.get("favorite", "").lower()
             is_cheer = self.request.query_params.get("is_cheer", "").lower()
 
-            if favorite == "true":
-                favorite = True
-            else:
-                favorite = False
+            # 문자열 값을 boolean 값으로 변환
+            if favorite is not None:
+                if favorite.lower() in ["true", "t", "1"]:
+                    favorite = True
+                elif favorite.lower() in ["false", "f", "0"]:
+                    favorite = False
+                else:
+                    return Response({"detail": "favorite 값이 유효하지 않습니다."}, status=400)
 
-            if is_cheer == "true":
-                is_cheer = True
-            else:
-                is_cheer = False
+            if is_cheer is not None:
+                if is_cheer.lower() in ["true", "t", "1"]:
+                    is_cheer = True
+                elif is_cheer.lower() in ["false", "f", "0"]:
+                    is_cheer = False
+                else:
+                    return Response({"detail": "is_cheer 값이 유효하지 않습니다."}, status=400)
 
             if team_id:
                 logger.info("team_id ::", team_id)
@@ -223,11 +230,7 @@ class TicketsViewSet(
 
             # 입력 데이터 복사 후 image 필드 제거 조건 적용
             updated_data = request.data.copy()
-            input_image = updated_data.get("image")
 
-            # 기존 image와 동일하면 업데이트 항목에서 제거
-            if input_image and ticket.image == input_image:
-                updated_data.pop("image")
 
             serializer = TicketUpdSerializer(ticket, data=updated_data, partial=True, context={"request": request})
             if serializer.is_valid():
@@ -435,10 +438,17 @@ class TicketsViewSet(
         user = request.user
         team_id = UserTeam.objects.get(user_id=user).team_id  # myTeam id 뽑아오기
 
+        # 쿼리 파라미터에서 is_ballpark 값 가져오기
         is_ballpark = request.query_params.get("is_ballpark")
 
-        if isinstance(is_ballpark, str):
-            is_ballpark = is_ballpark.lower() == "true"
+        # 문자열 값을 boolean 값으로 변환
+        if is_ballpark is not None:
+            if is_ballpark.lower() in ["true", "t", "1"]:
+                is_ballpark = True
+            elif is_ballpark.lower() in ["false", "f", "0"]:
+                is_ballpark = False
+            else:
+                return Response({"detail": "is_ballpark 값이 유효하지 않습니다."}, status=400)
 
         queryset = Ticket.objects.filter(writer=user, is_ballpark=is_ballpark, is_cheer=True).filter(
             Q(opponent=team_id) | Q(ballpark__team=team_id) | Q(hometeam_id=team_id) | Q(awayteam_id=team_id)

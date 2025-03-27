@@ -123,27 +123,27 @@ class TicketAddSerializer(serializers.ModelSerializer):
 # 수정용 Serialize
 class TicketUpdSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Ticket  # 여기서 Ticket 모델을 지정합니다.
-        fields = ['id','date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
-                  'gip_place', 'image', 'food', 'memo', 'is_homeballpark','updated_at', 'writer_id', 'only_me', 'hometeam_id', 'awayteam_id', 'is_cheer']
+        model = Ticket  # Ticket 모델을 지정합니다.
+        fields = ['id', 'date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
+                  'gip_place', 'image', 'food', 'memo', 'is_homeballpark', 'updated_at', 'writer_id', 'only_me',
+                  'hometeam_id', 'awayteam_id', 'is_cheer']
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        user = request.user
-        image = validated_data.pop('image', None)
+    def update(self, instance, validated_data):
+        # 업데이트 시 이미지 안 넣었을 경우 기존 이미지 유지
+        if 'image' in validated_data:
+            if validated_data['image'] == '' or validated_data['image'] is None:
+                validated_data.pop('image')  # 빈 문자열 또는 None인 경우 validated_data에서 제거
 
         try:
-            ticket = Ticket.objects.create(**validated_data)
-
-            if image:
-                image_url = TicketService.upload_to_s3(image, user.id)
-                ticket.image = image_url
-                ticket.save()
-            return ticket
+            # 다른 필드들 업데이트
+            for attr, value in validated_data.items():
+                setattr(instance, attr, value)
+            instance.save()
+            return instance
 
         except Exception as e:
             logger.error(f"Error occurred in TicketUpdSerializer: {e}")
-            raise serializers.ValidationError(f"An error occurred while creating the ticket: {e}")
+            raise serializers.ValidationError(f"An error occurred while updating the ticket: {e}")
 
 # 반응용 Serialize
 class TicketReactionSerializer(serializers.ModelSerializer):
