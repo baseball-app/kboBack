@@ -231,13 +231,13 @@ class TicketsViewSet(
             # 입력 데이터 복사 후 image 필드 제거 조건 적용
             updated_data = request.data.copy()
 
-
             serializer = TicketUpdSerializer(ticket, data=updated_data, partial=True, context={"request": request})
+
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=200)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors, status=400)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -123,27 +123,34 @@ class TicketAddSerializer(serializers.ModelSerializer):
 # 수정용 Serialize
 class TicketUpdSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Ticket  # Ticket 모델을 지정합니다.
-        fields = ['id', 'date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
-                  'gip_place', 'image', 'food', 'memo', 'is_homeballpark', 'updated_at', 'writer_id', 'only_me',
-                  'hometeam_id', 'awayteam_id', 'is_cheer']
+        model = Ticket
+        fields = [
+            'id', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
+            'gip_place', 'image', 'food', 'memo', 'is_homeballpark', 'updated_at', 'writer_id', 'only_me',
+            'hometeam_id', 'awayteam_id', 'is_cheer']
 
     def update(self, instance, validated_data):
-        # 업데이트 시 이미지 안 넣었을 경우 기존 이미지 유지
-        if 'image' in validated_data:
-            if validated_data['image'] == '' or validated_data['image'] is None:
-                validated_data.pop('image')  # 빈 문자열 또는 None인 경우 validated_data에서 제거
-
         try:
-            # 다른 필드들 업데이트
+            # 이미지 필드 처리
+            if 'image' in validated_data:
+                image = validated_data.get('image')
+                if not image:  # 이미지가 없거나 빈 경우
+                    validated_data.pop('image', None)
+                else:
+                    user = self.context.get('request').user
+                    image_url = TicketService.upload_to_s3(image, user.id)
+                    validated_data['image'] = image_url
+
+            # 데이터 업데이트
             for attr, value in validated_data.items():
                 setattr(instance, attr, value)
+
             instance.save()
             return instance
 
         except Exception as e:
-            logger.error(f"Error occurred in TicketUpdSerializer: {e}")
-            raise serializers.ValidationError(f"An error occurred while updating the ticket: {e}")
+            logger.error(f"Error occurred in TicketUpdSerializer update method: {e}")
+            raise serializers.ValidationError(f"An error occurred during ticket update: {e}")
 
 # 반응용 Serialize
 class TicketReactionSerializer(serializers.ModelSerializer):
