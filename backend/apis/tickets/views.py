@@ -108,11 +108,9 @@ class TicketsViewSet(
                     return Response({"detail": "is_cheer 값이 유효하지 않습니다."}, status=400)
 
             if team_id:
-                logger.info("team_id ::", team_id)
                 queryset = Ticket.objects.filter(
                     writer=user,  # 작성자 필터링
                     is_cheer=True,  # is_cheer 조건 강제
-                    favorite=favorite,
                 ).filter(
                     Q(ballpark__team__id=team_id)  # Ballpark와 연결된 Team ID 필터링
                     | Q(opponent__id=team_id)  # Opponent ID 필터링
