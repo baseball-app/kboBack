@@ -61,6 +61,7 @@ class Ticket(models.Model):
     confused = models.IntegerField(default=0, help_text="혼란 이모지")
     dislike = models.IntegerField(default=0, help_text="싫은 이모지")
     rage = models.IntegerField(default=0, help_text="격노 이모지")
+    victory = models.IntegerField(default=0, help_text="브이 이모지")
 
     hometeam_id = models.CharField(default=0)
     awayteam_id = models.CharField(default=0)

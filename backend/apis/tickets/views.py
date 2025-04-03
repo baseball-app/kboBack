@@ -71,53 +71,54 @@ logger = logging.getLogger(__name__)
 class TicketsViewSet(
     GenericViewSet,
 ):
-    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 직관 일기 리스트로 보기
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
     def ticket_list(self, request):
         try:
             user = request.user
 
             # 쿼리 파라미터 가져오기
             team_id = self.request.query_params.get("team_id")  # Team ID 입력값
-
-            # team_id가 비어 있는 경우 처리
             if not team_id or team_id.strip() == "":
                 team_id = None  # 빈값을 None으로 처리
 
-            # 쿼리셋 초기화
-            queryset = Ticket.objects.none()
-
-            # 쿼리 파라미터 가져오기 및 변환
             favorite = self.request.query_params.get("favorite", "").lower()
             is_cheer = self.request.query_params.get("is_cheer", "").lower()
 
-            # 문자열 값을 boolean 값으로 변환
-            if favorite is not None:
-                if favorite.lower() in ["true", "t", "1"]:
+            # 문자열 값을 boolean으로 변환
+            if favorite:
+                if favorite in ["true", "t", "1"]:
                     favorite = True
-                elif favorite.lower() in ["false", "f", "0"]:
+                elif favorite in ["false", "f", "0"]:
                     favorite = False
                 else:
                     return Response({"detail": "favorite 값이 유효하지 않습니다."}, status=400)
+            else:
+                favorite = None  # 빈 값 처리
 
-            if is_cheer is not None:
-                if is_cheer.lower() in ["true", "t", "1"]:
+            if is_cheer:
+                if is_cheer in ["true", "t", "1"]:
                     is_cheer = True
-                elif is_cheer.lower() in ["false", "f", "0"]:
+                elif is_cheer in ["false", "f", "0"]:
                     is_cheer = False
                 else:
                     return Response({"detail": "is_cheer 값이 유효하지 않습니다."}, status=400)
+            else:
+                is_cheer = None  # 빈 값 처리
 
+            # 필터 조건 생성
+            filters = {"writer": user}  # 기본 필터 조건
+            if is_cheer is not None:
+                filters["is_cheer"] = is_cheer
+            if favorite is not None:
+                filters["favorite"] = favorite
+
+            # team_id 처리
             if team_id:
-                queryset = Ticket.objects.filter(
-                    writer=user,  # 작성자 필터링
-                    is_cheer=True,  # is_cheer 조건 강제
-                ).filter(
-                    Q(ballpark__team__id=team_id)  # Ballpark와 연결된 Team ID 필터링
-                    | Q(opponent__id=team_id)  # Opponent ID 필터링
+                queryset = Ticket.objects.filter(**filters).filter(
+                    Q(awayteam_id=team_id) | Q(opponent__id=team_id)
                 )
             else:
-                # team_id가 없는 경우 기본 필터링 조건만 적용
-                queryset = Ticket.objects.filter(writer=user, is_cheer=is_cheer, favorite=favorite)
+                queryset = Ticket.objects.filter(**filters)  # team_id가 없을 경우 기본 필터만
 
             # 직렬화 및 응답 반환
             serializer = TicketListSerializer(queryset.distinct(), many=True)
@@ -127,7 +128,7 @@ class TicketsViewSet(
             logger.error(f"Error occurred in ticket_list: {e}")
             return Response({"error": str(e)}, status=500)
 
-    @action(methods=["GET"], detail=False, permission_classes=[AllowAny])  # 티켓 상세 보기
+    @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])  # 티켓 상세 보기
     def ticket_detail(self, request):
         user = request.user
         ticket_id = request.query_params.get("id")

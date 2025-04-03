@@ -37,13 +37,10 @@ class TicketSerializer(serializers.ModelSerializer):
         fields = ['id', 'date', 'result', 'weather', 'is_ballpark', 'score_our', 'score_opponent', 'starting_pitchers',
                   'gip_place', 'image', 'food', 'memo', 'is_homeballpark', 'created_at', 'updated_at', 'ballpark',
                   'game', 'opponent', 'writer', 'laugh', 'wink', 'good', 'clap', 'point_up', 'petulance', 'confused',
-                  'dislike', 'rage', 'only_me', 'is_double', 'favorite', 'hometeam_id', 'awayteam_id', 'direct_yn',
+                  'dislike', 'rage', 'victory', 'only_me', 'is_double', 'favorite', 'hometeam_id', 'awayteam_id', 'direct_yn',
                   'is_cheer']
 
     def get_image(self, obj):
-        # Logger로 이미지 데이터 출력
-        logger.info(f"Raw image field: {obj.image}")
-
         if not obj.image:
             # 필드가 비어 있거나 None인 경우 처리
             return None
@@ -156,7 +153,7 @@ class TicketUpdSerializer(serializers.ModelSerializer):
 class TicketReactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
-        fields = ['id','laugh','wink','good','clap','point_up','petulance','confused','dislike','rage']
+        fields = ['id','laugh','wink','good','clap','point_up','petulance','confused','dislike','rage','victory']
 
 # 삭제용 Serialize
 class TicketDelSerializer(serializers.ModelSerializer):
