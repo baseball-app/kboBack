@@ -2,8 +2,11 @@ import base64
 import uuid
 
 from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.db.models import Q
 
 from apps.auths.models import SocialInfo
+from apps.notifications.models import Notification
 from apps.teams.models import UserTeam, Team
 from apps.tickets.models import Ticket
 from apps.users.models import Friendship
@@ -43,12 +46,13 @@ class UserInvitationService:
 
 
 class UserLeaveService:
+    @transaction.atomic
     def leave(self, user_id):
         user = User.objects.get(id=user_id)
         SocialInfo.objects.filter(user_id=user_id).delete()
         UserTeam.objects.filter(user_id=user_id).delete()
-        Friendship.objects.filter(source_id=user_id).delete()
-        Friendship.objects.filter(target_id=user_id).delete()
+        Friendship.objects.filter(Q(source_id=user_id) | Q(target_id=user_id)).delete()
+        Notification.objects.filter(Q(user_id=user_id) | Q(feedback_user=user_id)).delete()
         user.delete()
 
 
