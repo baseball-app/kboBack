@@ -146,3 +146,9 @@ class UserFollowingsSerializer(Serializer):
 
 class UserInvitationSerializer(Serializer):
     code = serializers.CharField()
+
+
+class UserInquirySerializer(Serializer):
+    email = serializers.EmailField()
+    title = serializers.CharField(max_length=100)
+    content = serializers.CharField(max_length=1000)

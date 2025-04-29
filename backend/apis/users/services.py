@@ -1,15 +1,17 @@
 import base64
 import uuid
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Q
 
+from apis.exceptions import ApiValidationError
 from apps.auths.models import SocialInfo
 from apps.notifications.models import Notification
 from apps.teams.models import UserTeam, Team
 from apps.tickets.models import Ticket
-from apps.users.models import Friendship
+from apps.users.models import Friendship, UserInquiry
 
 User = get_user_model()
 
@@ -76,3 +78,15 @@ class UserModifyService:
                 user = user_team.user
 
                 Ticket.objects.filter(writer=user).delete()
+
+
+class UserInquiryService:
+    def submission_inquiry(self, user, validated_data):
+        cnt = len(UserInquiry.objects.filter(created_user=user, created_at__gte=datetime.now() - timedelta(days=3)))
+        if cnt >= 3:
+            raise ApiValidationError("Multiple submissions have been received within the last three days.")
+
+        validated_data['created_user'] = user
+        UserInquiry.objects.create(**validated_data)
+
+        return validated_data.get('email')
