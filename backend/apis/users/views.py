@@ -12,9 +12,9 @@ from .serializers import (
     UserInvitationSerializer,
     UserFollowersSerializer,
     UserFollowingsSerializer,
-    UserModifySerializer, UserFriendsSerializer,
+    UserModifySerializer, UserFriendsSerializer, UserInquirySerializer,
 )
-from .services import UserFollowService, UserInvitationService, UserLeaveService, UserModifyService
+from .services import UserFollowService, UserInvitationService, UserLeaveService, UserModifyService, UserInquiryService
 from .swagger import (
     SWAGGER_USERS_ME,
     SWAGGER_USERS_FOLLOW,
@@ -24,7 +24,9 @@ from .swagger import (
     SWAGGER_USERS_APPLY_INVITATION,
     SWAGGER_USERS_FOLLOWERS,
     SWAGGER_USERS_FOLLOWINGS,
-    SWAGGER_USERS_MODIFY, SWAGGER_USERS_FRIENDS,
+    SWAGGER_USERS_MODIFY,
+    SWAGGER_USERS_FRIENDS,
+    SWAGGER_USERS_SUBMISSION_INQUIRY,
 )
 
 
@@ -39,6 +41,7 @@ from .swagger import (
     followings=SWAGGER_USERS_FOLLOWINGS,
     invitation_code=SWAGGER_USERS_INVITATION_CODE,
     apply_invitation=SWAGGER_USERS_APPLY_INVITATION,
+    submission_inquiry=SWAGGER_USERS_SUBMISSION_INQUIRY,
 )
 class UsersViewSet(
     SentryLoggingMixin,
@@ -125,3 +128,14 @@ class UsersViewSet(
         user_id = service.decode_invite_code(data.get("code"))
 
         return Response(status=status.HTTP_200_OK, data={"user_id": user_id})
+
+    @action(methods=["POST"], url_path="submission-inquiry", detail=False, permission_classes=[IsAuthenticated])
+    def submission_inquiry(self, request):
+        serializer = UserInquirySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        service = UserInquiryService()
+        email = service.submission_inquiry(request.user, data)
+
+        return Response(status=status.HTTP_200_OK, data={"email": email})
