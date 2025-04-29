@@ -60,6 +60,15 @@ BODY_PARAMETER_FOR_APPLY_INVITATION = inline_serializer(
     },
 )
 
+BODY_PARAMETER_FOR_SUBMISSION_INQUIRY = inline_serializer(
+    name="submission_inquiry",
+    fields={
+        "email": serializers.EmailField(),
+        "title": serializers.CharField(),
+        "content": serializers.CharField(),
+    },
+)
+
 SWAGGER_USERS_ME = extend_schema(
     tags=SWAGGER_USERS_TAGS,
     summary="내 정보 확인",
@@ -175,4 +184,13 @@ SWAGGER_USERS_APPLY_INVITATION = extend_schema(
     request=BODY_PARAMETER_FOR_APPLY_INVITATION,
     responses={200: OpenApiTypes.OBJECT},
     examples=[OpenApiExample(name="Success Example", value={"user_id": "1"}, response_only=True)],
+)
+
+SWAGGER_USERS_SUBMISSION_INQUIRY = extend_schema(
+    tags=SWAGGER_USERS_TAGS,
+    summary="문의하기 제출",
+    description="사용자의 문의하기 제출",
+    request=BODY_PARAMETER_FOR_SUBMISSION_INQUIRY,
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[OpenApiExample(name="Success Example", value={"email": "abc@gmail.com"}, response_only=True)],
 )
