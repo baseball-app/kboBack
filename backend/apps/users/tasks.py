@@ -14,7 +14,7 @@ User = get_user_model()
 def send_user_count_to_discord():
     current_user_count = User.objects.count()
     current_ticket_count = Ticket.objects.count()
-    now = timezone.localtime().strftime('%H:%M')
+    now = timezone.localtime().strftime('%Y년 %m월 %d일 %H:%M')
     message = {
         "content": f"📊 {now} 기준 유저 수: {current_user_count} 명 / 현재 티켓 수: {current_ticket_count} 개"
     }
