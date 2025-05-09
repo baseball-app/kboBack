@@ -216,6 +216,9 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Seoul"
 
+# Celery Beat
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
 # AWS
 AWS_S3_ACCESS_KEY = config["aws"].get("AWS_S3_ACCESS_KEY", "")
 AWS_S3_SECRET_KEY = config["aws"].get("AWS_S3_SECRET_KEY", "")
@@ -224,9 +227,6 @@ AWS_S3_REGION_NAME = config["aws"].get("AWS_S3_REGION_NAME", "ap-northeast-2")
 AWS_S3_CUSTOM_DOMAIN = config["aws"].get("AWS_S3_CUSTOM_DOMAIN", "")
 
 DEFAULT_HOST = "http://localhost:8000"
-
-# Discord Webhook
-DISCORD_WEBHOOK_URL = config["discord"]["url"]
 
 # Sentry 설정
 sentry_sdk.init(
