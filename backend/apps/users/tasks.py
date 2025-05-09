@@ -1,4 +1,4 @@
-from datetime import timezone
+from django.utils import timezone
 
 import requests
 from celery import shared_task
