@@ -52,3 +52,6 @@ AWS_S3_CUSTOM_DOMAIN = ""
 
 [sentry]
 dsn_url = ""
+
+[discord]
+url = ""

@@ -1,4 +1,5 @@
 import os
+
 from celery import Celery, shared_task
 from django.db import transaction
 
