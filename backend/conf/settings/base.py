@@ -225,6 +225,9 @@ AWS_S3_CUSTOM_DOMAIN = config["aws"].get("AWS_S3_CUSTOM_DOMAIN", "")
 
 DEFAULT_HOST = "http://localhost:8000"
 
+# Discord Webhook
+DISCORD_WEBHOOK_URL = config["discord"]["url"]
+
 # Sentry 설정
 sentry_sdk.init(
     dsn=config["sentry"].get("dsn_url", ""),
