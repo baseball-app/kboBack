@@ -63,4 +63,4 @@ class UserInquiry(CreatedTimeStampModel):
     title = models.CharField(max_length=100)
     content = models.CharField(max_length=1000)
 
-    created_user = models.OneToOneField("User", on_delete=models.DO_NOTHING, null=True, related_name="+")
+    created_user = models.ForeignKey("User", on_delete=models.DO_NOTHING, null=True, related_name="+", unique=False)
