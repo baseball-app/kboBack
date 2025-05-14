@@ -24,8 +24,10 @@ services:
       dockerfile: Dockerfile-local
     command: >
       bash -c "python manage.py migrate &&
-               python manage.py runserver 0.0.0.0:8000"
-#              gunicorn --bind 0.0.0.0:8000 conf.wsgi:application"
+               python manage.py runserver 0.0.0.0:8000 &
+               celery -A conf worker --loglevel=info &
+               celery -A conf beat --loglevel=info &
+               wait"
     depends_on:
       - db
       - redis
@@ -33,29 +35,6 @@ services:
       - ./backend/static:/server/static
     ports:
       - "8000:8000"
-    restart: unless-stopped
-
-  celery_worker:
-    build:
-      context: .
-      dockerfile: Dockerfile-local
-    command: celery -A conf worker --loglevel=info
-    depends_on:
-      - db
-      - redis
-      - server
-    restart: unless-stopped
-
-  celery_beat:
-    build:
-      context: .
-      dockerfile: Dockerfile-local
-    command: celery -A conf beat --loglevel=info
-    depends_on:
-      - db
-      - redis
-      - server
-      - celery_worker
     restart: unless-stopped
 
 volumes:

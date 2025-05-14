@@ -12,32 +12,14 @@ services:
       dockerfile: Dockerfile-dev
     command: >
       bash -c "python manage.py migrate &&
-               gunicorn --bind 0.0.0.0:8001 conf.wsgi:application"
+               gunicorn --bind 0.0.0.0:8001 conf.wsgi:application &
+               celery -A conf worker --loglevel=info &
+               celery -A conf beat --loglevel=info &
+               wait"
     depends_on:
       - redis
     volumes:
       - ./backend/static:/server/static
     ports:
       - "8001:8001"
-    restart: unless-stopped
-
-  celery_worker:
-    build:
-      context: .
-      dockerfile: Dockerfile-dev
-    command: celery -A conf worker --loglevel=info
-    depends_on:
-      - redis
-      - server
-    restart: unless-stopped
-
-  celery_beat:
-    build:
-      context: .
-      dockerfile: Dockerfile-dev
-    command: celery -A conf beat --loglevel=info
-    depends_on:
-      - redis
-      - server
-      - celery_worker
     restart: unless-stopped

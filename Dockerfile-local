@@ -15,6 +15,5 @@ RUN poetry install --no-interaction
 
 WORKDIR /server/backend
 RUN python manage.py makemigrations
-# RUN echo yes | python manage.py collectstatic
 
 EXPOSE 8000
