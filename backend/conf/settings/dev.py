@@ -1,5 +1,7 @@
 from conf.settings.base import *  # noqa: F403
 
+config = toml.load(BASE_DIR / "config_dev.toml")  # noqa: F405
+
 DEBUG = False
 ALLOWED_HOSTS = ["kboapp.xyz", "www.kboapp.xyz", "localhost", "127.0.0.1"]
 CSRF_TRUSTED_ORIGINS = [
