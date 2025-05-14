@@ -171,11 +171,17 @@ class TicketFavoriteSerializer(serializers.ModelSerializer):
 class TicketCalendarSerializer(serializers.ModelSerializer):
     ballpark = BallparkSerializer(read_only=True)
     opponent = OpponentSerializer(read_only=True)
+    home = serializers.SerializerMethodField()  # home을 별도 필드로 추가
 
     class Meta:
         model = Ticket
-        fields = ['id','date', 'result', 'writer_id','game_id','opponent','ballpark']
+        fields = ['id', 'date', 'result', 'writer_id', 'game_id', 'opponent', 'ballpark', 'home']
 
+    def get_home(self, obj):
+        if obj.ballpark and obj.ballpark.team_id:
+            team = Team.objects.filter(id=obj.ballpark.team_id).first()
+            return team.name if team else None
+        return None
 
 # 직접 등록용 Serialize
 class TicketDirectAddSerializer(serializers.ModelSerializer):
