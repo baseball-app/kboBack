@@ -1,7 +1,8 @@
 FROM python:3.12
 
-RUN apt-get -y update
-RUN apt-get -y install vim
+RUN apt-get update && apt-get install -y \
+    vim \
+    redis-server
 
 RUN mkdir -p /server/backend
 RUN mkdir /ssl
