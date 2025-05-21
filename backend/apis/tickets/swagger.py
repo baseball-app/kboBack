@@ -24,7 +24,31 @@ QUERY_PARAMETER_DETAIL_TYPE = OpenApiParameter(
     name="id",
     type=str,
     location=OpenApiParameter.QUERY,
-    description="확인하고자 하는 ticket_id를 입력시켜주세요. (티켓 추가 작업 후 확인 가능)",
+    description="확인하고자 하는 티켓의 id를 입력시켜주세요.",
+    required=False,
+)
+
+QUERY_PARAMETER_CALENDAR_TYPE = OpenApiParameter(
+    name="date",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="확인하고자 하는 date값(YYYY-MM-DD)을 입력시켜주세요. (캘린더 화면 접근시 id값 제외 하고서 date만 입력해주세요)",
+    required=False,
+)
+
+QUERY_PARAMETER_CALENDAR_USER_TYPE = OpenApiParameter(
+    name="user_id",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="확인하고자 하는 유저 ID를 입력시켜주세요. (user_id값은 따로 확인해서 기입이 필요합니다.)",
+    required=False,
+)
+
+QUERY_PARAMETER_TARGET_ID_TYPE = OpenApiParameter(
+    name="target_id",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="해당 하는 ID를 입력해주세요 본인일 경우 본인의 ID 친구일 경우 보고 싶은 티켓의 ID값을 입력해주시면 됩니다.",
     required=False,
 )
 
@@ -33,7 +57,16 @@ SWAGGER_TICKETS_FIND_FAVORITE = OpenApiParameter(
     type=str,
     location=OpenApiParameter.QUERY,
     description="최애 경기를 확인하고 싶은 경우 해당 값에 True를 넣어주세요.",
-    default=True,
+    default=False,
+    required=False,
+)
+
+SWAGGER_TICKETS_FIND_CHEER = OpenApiParameter(
+    name="is_cheer",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="타팀 경기를 확인하고 싶은 경우 해당 값에 True를 넣어주세요.",
+    default=False,
     required=False,
 )
 
@@ -45,6 +78,7 @@ SWAGGER_TICKETS_LIST = extend_schema(
     parameters=[
         QUERY_PARAMETER_LIST_TYPE,
         SWAGGER_TICKETS_FIND_FAVORITE,
+        SWAGGER_TICKETS_FIND_CHEER,
     ],
     responses={
         200: OpenApiExample(
@@ -56,7 +90,11 @@ SWAGGER_TICKETS_LIST = extend_schema(
 SWAGGER_TICKETS_DETAIL = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 일기 상세 보기",
-    parameters=[QUERY_PARAMETER_DETAIL_TYPE],
+    parameters=[
+        QUERY_PARAMETER_DETAIL_TYPE,
+        QUERY_PARAMETER_CALENDAR_TYPE,
+        QUERY_PARAMETER_TARGET_ID_TYPE,
+    ],
     description="직관 일기 상세 표기 표출",
     responses={
         200: OpenApiExample(
@@ -68,7 +106,7 @@ SWAGGER_TICKETS_DETAIL = extend_schema(
 SWAGGER_TICKETS_ADD = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 일기 등록",
-    description="내 직관일기를 등록합니다.",
+    description="내 직관일기를 등록합니다. (직접입력, 자동입력 통합)",
     request={
         "multipart/form-data": {
             "type": "object",
@@ -88,6 +126,10 @@ SWAGGER_TICKETS_ADD = extend_schema(
                 "is_homeballpark": {"type": "boolean"},
                 "only_me": {"type": "boolean"},
                 "is_double": {"type": "boolean"},
+                "hometeam_id": {"type": "integer"},
+                "awayteam_id": {"type": "integer"},
+                "direct_yn": {"type": "boolean"},
+                "is_cheer": {"type", "boolean"},
             }
         }
     },
@@ -95,9 +137,7 @@ SWAGGER_TICKETS_ADD = extend_schema(
         OpenApiExample(
             name="Example",
             summary="Example input",
-            description="직관 일기 입력 예시입니다. \n "
-                        "경기일정에서 받아와야 하는 값"
-                        "game_id -> game",
+            description="직관 일기 입력 예시입니다. \n ",
             value={
                 "date": "2025-08-21",
                 "game": 624,
@@ -114,6 +154,10 @@ SWAGGER_TICKETS_ADD = extend_schema(
                 "is_homeballpark":True,
                 "only_me": False,
                 "is_double": False,
+                "hometeam_id": 1,
+                "awayteam_id": 6,
+                "direct_yn": False,
+                "is_cheer": False,
             }
         )
     ],
@@ -143,8 +187,9 @@ SWAGGER_TICKETS_UPD = extend_schema(
                 "is_homeballpark": {"type": "boolean"},
                 "only_me": {"type": "boolean"},
                 "is_double": {"type": "boolean"},
-                "direct_home_team": {"type": "string"},
-                "direct_away_team": {"type": "string"},
+                "hometeam_id": {"type": "string"},
+                "awayteam_id": {"type": "string"},
+                "is_cheer": {"type": "boolean"},
             }
         }
     },
@@ -169,6 +214,9 @@ SWAGGER_TICKETS_UPD = extend_schema(
                 "is_homeballpark":False,
                 "only_me": True,
                 "is_double": True,
+                "hometeam_id": {"type": "integer"},
+                "awayteam_id": {"type": "integer"},
+                "is_cheer": False,
             }
         )
     ],
@@ -193,6 +241,20 @@ SWAGGER_TICKETS_DEL = extend_schema(
     ],
 )
 
+SWAGGER_TICKETS_REACTION_VIEW = extend_schema(
+    tags=SWAGGER_TICKETS_TAGS,
+    summary="지정 티켓 반응 보기",
+    parameters=[
+        QUERY_PARAMETER_TARGET_ID_TYPE,
+    ],
+    description="지정된 티켓의 반응 갯수가 몇개 있는지 노출합니다.",
+    responses={
+        200: OpenApiExample(
+            "Success Response", value=[], response_only=True, status_codes=["200"]
+        ),
+    },
+)
+
 SWAGGER_TICKETS_REACTION = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 일기 반응 추가",
@@ -203,12 +265,11 @@ SWAGGER_TICKETS_REACTION = extend_schema(
         OpenApiExample(
             name="Example 4",
             summary="Example input",
-            description="티켓 반응 추가하거나 삭제하는 예시입니다. \n reaction_pos는 추가 시 add 삭제 시 del 기입 , "
-                        "\n reaction_type는 like,love,haha,yay,wow,sad,angry 기입 가능",
+            description="티켓 반응 추가하거나 삭제하는 예시입니다. \n reaction_pos는 추가 시 add 삭제 시 del 기입 ",
             value={
                 "id": 1,
                 "reaction_pos": "add",
-                "reaction_type": "like",
+                "reaction_type": "rage",
             }
         ),
     ],
@@ -244,10 +305,18 @@ SWAGGER_WIN_RATE_CALCULATION = extend_schema(
             summary="Example input",
             description="승리 횟수, 패배 횟수, 무승부 횟수, 취소 횟수를 int로 출력합니다",
             value={
-              "win_count": 2,
-              "loss_count": 0,
-              "draw_count": 0,
-              "cancel_count": 0
+                "is_ballpark_win_rate": {
+                    "win_count": 1,
+                    "loss_count": 0,
+                    "draw_count": 0,
+                    "cancel_count": 0
+                },
+                "is_not_ballpark_win_rate": {
+                    "win_count": 0,
+                    "loss_count": 2,
+                    "draw_count": 0,
+                    "cancel_count": 0
+                }
             }
         ),
     ],
@@ -263,16 +332,16 @@ SWAGGER_WEEKDAY_MOST_WIN = extend_schema(
     ],
 )
 
-SWAGGER_BALLPARK_MOST_WIN = extend_schema(
+SWAGGER_BALLPARK_MOST_VIEW = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
-    summary="최다 승리 구장 표출",
-    description="그동안 티켓들의 가장 승리가 많은 구장을 보여줍니다",
+    summary="최다 관람 구장 표출",
+    description="그동안 가장 많이 티켓을 남긴 구단을 보여줍니다",
     responses={200: OpenApiTypes.OBJECT},
     examples=[
         OpenApiExample(
             name="Example",
             summary="Example input",
-            description="승리 티켓 확인하여 가장 승리가 많은 구장 명 출력",
+            description="티켓 확인하여 가장 관람이력이 많은 구장 명 출력",
             value={"most_wins_ballpark": "창원NC파크"}
         ),
     ],
@@ -303,31 +372,27 @@ SWAGGER_LONGEST_WINNING_STREAK = extend_schema(
             name="Example",
             summary="Example input",
             description="연승기간 계산하여 숫자로 출력",
-            value={2}
+            value={
+                "longest_winning_streak" : 2,
+            }
         ),
     ],
 )
 
-SWAGGER_WIN_SITE_PERCENT = extend_schema(
+QUERY_PARAMETER_IS_BALLPARK_TYPE = OpenApiParameter(
+    name="is_ballpark",
+    type=str,
+    location=OpenApiParameter.QUERY,
+    description="직관인지 집관인지 값을 통해 구분해주세요. 직관일 경우 True , 집관일 경우 False",
+    required=False,
+)
+
+SWAGGER_WIN_PERCENT = extend_schema(
     tags=SWAGGER_TICKETS_TAGS,
     summary="직관 승률 표출",
     description="직관으로 찍은 티켓의 총 승률을 계산합니다",
     responses={200: OpenApiTypes.OBJECT},
-    examples=[
-        OpenApiExample(
-            name="Example",
-            summary="Example input",
-            description="승률 계산하여 퍼센티지 숫자로 출력 (% 기호는 제외)",
-            value={50}
-        ),
-    ],
-)
-
-SWAGGER_WIN_HOME_PERCENT = extend_schema(
-    tags=SWAGGER_TICKETS_TAGS,
-    summary="집관 승률 표출",
-    description="집관으로 찍은 티켓의 총 승률을 계산합니다",
-    responses={200: OpenApiTypes.OBJECT},
+    parameters=[QUERY_PARAMETER_IS_BALLPARK_TYPE],
     examples=[
         OpenApiExample(
             name="Example",
@@ -354,6 +419,7 @@ SWAGGER_TICKETS_CALENDAR_LOG = extend_schema(
     request=TicketSerializer,
     parameters=[
         QUERY_PARAMETER_CALENDAR_TYPE,
+        QUERY_PARAMETER_CALENDAR_USER_TYPE,
     ],
     examples=[
         OpenApiExample(
@@ -381,56 +447,58 @@ SWAGGER_TICKETS_CALENDAR_LOG = extend_schema(
 )
 
 SWAGGER_TICKETS_DIRECT_ADD = extend_schema(
-    tags=SWAGGER_TICKETS_TAGS,
-    summary="직관 일기 직접 등록",
-    description="내 직관일기를 직접 등록합니다.(팀명)",
-    request={
-        "multipart/form-data": {
-            "type": "object",
-            "properties": {
-                "date": {"type": "string"},
-                "result": {"type": "string"},
-                "weather": {"type": "string"},
-                "is_ballpark": {"type": "boolean"},
-                "score_our": {"type": "integer"},
-                "score_opponent": {"type": "integer"},
-                "starting_pitchers": {"type": "string"},
-                "gip_place": {"type": "string"},
-                "image": {"type": "string", "format": "binary"},
-                "food": {"type": "string"},
-                "memo": {"type": "string"},
-                "is_homeballpark": {"type": "boolean"},
-                "only_me": {"type": "boolean"},
-                "is_double": {"type": "boolean"},
-                "direct_home_team": {"type": "string"},
-                "direct_away_team": {"type": "string"},
-            }
-        }
-    },
-    examples=[
-        OpenApiExample(
-            name="Example",
-            summary="Example input",
-            description="직관 일기 직접 입력 예시입니다. \n ",
-            value={
-                "date": "2025-08-21",
-                "result": "승리",
-                "weather": "흐림",
-                "is_ballpark": True,
-                "score_our":9,
-                "score_opponent":6,
-                "starting_pitchers": "원태인",
-                "gip_place": "",
-                "image": "",
-                "food": "닭강정",
-                "memo": "재미있었다",
-                "is_homeballpark":True,
-                "only_me": False,
-                "is_double": False,
-                "direct_home_team": "SSG랜더스",
-                "direct_away_team": "KT위즈",
-            }
-        )
-    ],
-    responses={200: OpenApiTypes.OBJECT},
+ tags=SWAGGER_TICKETS_TAGS,
+ summary="직관 일기 직접 등록",
+ description="내 직관일기를 직접 등록합니다.(팀명)",
+ request={
+     "multipart/form-data": {
+         "type": "object",
+         "properties": {
+             "date": {"type": "string"},
+             "result": {"type": "string"},
+             "weather": {"type": "string"},
+             "is_ballpark": {"type": "boolean"},
+             "score_our": {"type": "integer"},
+             "score_opponent": {"type": "integer"},
+             "starting_pitchers": {"type": "string"},
+             "gip_place": {"type": "string"},
+             "image": {"type": "string", "format": "binary"},
+             "food": {"type": "string"},
+             "memo": {"type": "string"},
+             "is_homeballpark": {"type": "boolean"},
+             "only_me": {"type": "boolean"},
+             "is_double": {"type": "boolean"},
+             "direct_home_team": {"type": "string"},
+             "direct_away_team": {"type": "string"},
+             "is_cheer_home": {"type": "boolean"},
+         }
+     }
+ },
+ examples=[
+     OpenApiExample(
+         name="Example",
+         summary="Example input",
+         description="직관 일기 직접 입력 예시입니다. \n ",
+         value={
+             "date": "2025-08-21",
+             "result": "승리",
+             "weather": "흐림",
+             "is_ballpark": True,
+             "score_our":9,
+             "score_opponent":6,
+             "starting_pitchers": "원태인",
+             "gip_place": "",
+             "image": "",
+             "food": "닭강정",
+             "memo": "재미있었다",
+             "is_homeballpark":True,
+             "only_me": False,
+             "is_double": False,
+             "direct_home_team": "SSG랜더스",
+             "direct_away_team": "KT위즈",
+             "is_cheer_home": True,
+         }
+     )
+ ],
+ responses={200: OpenApiTypes.OBJECT},
 )

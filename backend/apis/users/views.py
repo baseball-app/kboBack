@@ -5,15 +5,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from base.mixins import SentryLoggingMixin
 from .serializers import (
     UserInfoSerializer,
     UserFollowSerializer,
     UserInvitationSerializer,
     UserFollowersSerializer,
     UserFollowingsSerializer,
-    UserModifySerializer, UserFriendsSerializer,
+    UserModifySerializer, UserFriendsSerializer, UserInquirySerializer,
 )
-from .services import UserFollowService, UserInvitationService, UserLeaveService, UserModifyService
+from .services import UserFollowService, UserInvitationService, UserLeaveService, UserModifyService, UserInquiryService
 from .swagger import (
     SWAGGER_USERS_ME,
     SWAGGER_USERS_FOLLOW,
@@ -23,7 +24,9 @@ from .swagger import (
     SWAGGER_USERS_APPLY_INVITATION,
     SWAGGER_USERS_FOLLOWERS,
     SWAGGER_USERS_FOLLOWINGS,
-    SWAGGER_USERS_MODIFY, SWAGGER_USERS_FRIENDS,
+    SWAGGER_USERS_MODIFY,
+    SWAGGER_USERS_FRIENDS,
+    SWAGGER_USERS_SUBMISSION_INQUIRY,
 )
 
 
@@ -38,8 +41,12 @@ from .swagger import (
     followings=SWAGGER_USERS_FOLLOWINGS,
     invitation_code=SWAGGER_USERS_INVITATION_CODE,
     apply_invitation=SWAGGER_USERS_APPLY_INVITATION,
+    submission_inquiry=SWAGGER_USERS_SUBMISSION_INQUIRY,
 )
-class UsersViewSet(GenericViewSet):
+class UsersViewSet(
+    SentryLoggingMixin,
+    GenericViewSet
+):
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
     def me(self, request):
         serializer = UserInfoSerializer(request.user)
@@ -65,7 +72,7 @@ class UsersViewSet(GenericViewSet):
 
     @action(methods=["GET"], detail=False, permission_classes=[IsAuthenticated])
     def friends(self, request):
-        serializer = UserFriendsSerializer(instance=request.user, context={"game_id": request.query_params.get("game_id")})
+        serializer = UserFriendsSerializer(instance=request.user)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
     @action(methods=["POST"], detail=False, permission_classes=[IsAuthenticated])
@@ -121,3 +128,14 @@ class UsersViewSet(GenericViewSet):
         user_id = service.decode_invite_code(data.get("code"))
 
         return Response(status=status.HTTP_200_OK, data={"user_id": user_id})
+
+    @action(methods=["POST"], url_path="submission-inquiry", detail=False, permission_classes=[IsAuthenticated])
+    def submission_inquiry(self, request):
+        serializer = UserInquirySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        service = UserInquiryService()
+        email = service.submission_inquiry(request.user, data)
+
+        return Response(status=status.HTTP_200_OK, data={"email": email})

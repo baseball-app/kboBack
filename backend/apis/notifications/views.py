@@ -10,6 +10,7 @@ from rest_framework.viewsets import GenericViewSet
 from apis.notifications.serializers import NotificationSerializer
 from apis.notifications.swagger import SWAGGER_NOTIFICATIONS_LIST, SWAGGER_NOTIFICATIONS_UPDATE
 from apps.notifications.models import Notification
+from base.mixins import SentryLoggingMixin
 
 
 @extend_schema_view(
@@ -17,6 +18,7 @@ from apps.notifications.models import Notification
     update=SWAGGER_NOTIFICATIONS_UPDATE,
 )
 class NotificationsViewSet(
+    SentryLoggingMixin,
     ListModelMixin,
     UpdateModelMixin,
     GenericViewSet,
@@ -28,11 +30,6 @@ class NotificationsViewSet(
     serializer_class = NotificationSerializer
 
     def get_queryset(self):
-        if self.action == "list":
-            friends = self.request.user.friendships_source.values_list("target", flat=True)
-            target_ids = [self.request.user.id] + [friends]
-
-            return Notification.objects.filter(user__id__in=target_ids)
         return Notification.objects.filter(user=self.request.user)
 
     def list(self, request, *args, **kwargs):

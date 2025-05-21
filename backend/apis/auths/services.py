@@ -1,3 +1,6 @@
+import logging
+
+import jwt
 import requests
 from django.conf import settings
 from django.db import transaction
@@ -5,8 +8,6 @@ from django.db import transaction
 from apps.auths.chocies import SocialTypeEnum
 from apps.auths.models import SocialInfo
 from apps.users.models import User
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,6 @@ class KakaoAuthService(AuthService):
             logger.error(f"Failed to authenticate or register user: {str(e)}")
             return None, None
 
-
     def _get_access_token(self, data):
         grant_type = "authorization_code"
         redirect_uri = f"{settings.DEFAULT_HOST}/auths/kakao/callback"
@@ -125,3 +125,58 @@ class KakaoAuthService(AuthService):
             },
         ).json()
         return response if response["id"] else None
+
+
+class AppleAuthService(AuthService):
+    def get_social_user(self, data):
+        if data.get('native'):
+            return self._get_user_info("", data.get('id_token'))
+        access_token, id_token = self._get_access_token(data)
+        if not access_token or not id_token:
+            return None
+        return self._get_user_info(access_token, id_token)
+
+    def auth_or_register(self, social_user_info):
+        social_id = social_user_info["sub"]
+
+        # 기존 유저 조회
+        social_info = SocialInfo.objects.filter(social_id=social_id).last()
+        if social_info:
+            user = User.objects.filter(id=social_info.user_id).last()
+            if not user:
+                return None, None
+            return user, False
+
+        # 신규 유저 생성
+        with transaction.atomic():
+            user = User.objects.create(nickname=f"apple_{social_id}")
+            SocialInfo.objects.create(user=user, social_id=social_id, type=SocialTypeEnum.KAKAO.value)
+
+        return user, True
+
+    def _get_access_token(self, data):
+        grant_type = "authorization_code"
+        redirect_uri = f"{settings.DEFAULT_HOST}/auths/apple/callback"
+        client_id = settings.SOCIAL_LOGIN.get("APPLE").get("CLIENT_ID")
+        client_secret = settings.SOCIAL_LOGIN.get("APPLE").get("CLIENT_SECRET")
+        code = data.get("code")
+        response = requests.post(
+            f"https://appleid.apple.com/auth/token",
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+            },
+            data={
+                "grant_type": grant_type,
+                "code": code,
+                "redirect_uri": {redirect_uri},
+                "client_id": client_id,
+                "client_secret": client_secret
+            }
+        ).json()
+        access_token = response.get("access_token", None)
+        id_token = response.get("id_token", None)
+        return access_token, id_token
+
+    def _get_user_info(self, access_token: str, id_token: str):
+        decoded_token = jwt.decode(id_token, options={"verify_signature": False})
+        return decoded_token

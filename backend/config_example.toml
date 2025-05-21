@@ -39,9 +39,19 @@ client_secret = "change me"
 client_id = "change me"
 client_secret = "change me"
 
+[api_keys.apple]
+client_id = "change me"
+client_secret = "change me"
+
 [aws]
 AWS_S3_ACCESS_KEY = ""
 AWS_S3_SECRET_KEY = ""
 AWS_S3_STORAGE_BUCKET_NAME = ""
 AWS_S3_REGION_NAME = ""
 AWS_S3_CUSTOM_DOMAIN = ""
+
+[sentry]
+dsn_url = ""
+
+[discord]
+url = ""

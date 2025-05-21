@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 
 import toml
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -42,6 +45,7 @@ THIRD_PARTY_APPS = [
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE = [
+    "base.middlewares.SentryTransactionMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -137,6 +141,10 @@ SOCIAL_LOGIN = {
         "CLIENT_ID": config["api_keys"]["kakao"]["client_id"],
         "CLIENT_SECRET": config["api_keys"]["kakao"]["client_secret"],
     },
+    "APPLE": {
+        "CLIENT_ID": config["api_keys"]["apple"]["client_id"],
+        "CLIENT_SECRET": config["api_keys"]["apple"]["client_secret"],
+    },
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -208,6 +216,9 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Seoul"
 
+# Celery Beat
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
 # AWS
 AWS_S3_ACCESS_KEY = config["aws"].get("AWS_S3_ACCESS_KEY", "")
 AWS_S3_SECRET_KEY = config["aws"].get("AWS_S3_SECRET_KEY", "")
@@ -216,3 +227,16 @@ AWS_S3_REGION_NAME = config["aws"].get("AWS_S3_REGION_NAME", "ap-northeast-2")
 AWS_S3_CUSTOM_DOMAIN = config["aws"].get("AWS_S3_CUSTOM_DOMAIN", "")
 
 DEFAULT_HOST = "http://localhost:8000"
+
+# Sentry 설정
+sentry_sdk.init(
+    dsn=config["sentry"].get("dsn_url", ""),
+    integrations=[
+        DjangoIntegration(),
+    ],
+    traces_sample_rate=1.0,
+    send_default_pii=True
+)
+
+# Discord Webhook
+DISCORD_WEBHOOK_URL = config["discord"]["url"]

@@ -1,24 +1,33 @@
 import base64
 import uuid
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.db.models import Q
 
+from apis.exceptions import ApiValidationError
 from apps.auths.models import SocialInfo
+from apps.notifications.models import Notification
 from apps.teams.models import UserTeam, Team
 from apps.tickets.models import Ticket
-from apps.users.models import Friendship
+from apps.users.models import Friendship, UserInquiry
 
 User = get_user_model()
 
 
 class UserFollowService:
     def make_relation(self, source_id, target_id):
+        if source_id == target_id:
+            return
         s_user = User.objects.get(id=source_id)
         t_user = User.objects.get(id=target_id)
         Friendship.objects.create(source=s_user, target=t_user)
         Friendship.objects.create(source=t_user, target=s_user)
 
     def release_relation(self, source_id, target_id):
+        if source_id == target_id:
+            return
         s_user = User.objects.get(id=source_id)
         t_user = User.objects.get(id=target_id)
         Friendship.objects.filter(source=s_user, target=t_user).delete()
@@ -39,12 +48,13 @@ class UserInvitationService:
 
 
 class UserLeaveService:
+    @transaction.atomic
     def leave(self, user_id):
         user = User.objects.get(id=user_id)
         SocialInfo.objects.filter(user_id=user_id).delete()
         UserTeam.objects.filter(user_id=user_id).delete()
-        Friendship.objects.filter(source_id=user_id).delete()
-        Friendship.objects.filter(target_id=user_id).delete()
+        Friendship.objects.filter(Q(source_id=user_id) | Q(target_id=user_id)).delete()
+        Notification.objects.filter(Q(user_id=user_id) | Q(feedback_user=user_id)).delete()
         user.delete()
 
 
@@ -67,4 +77,16 @@ class UserModifyService:
                 user_team.save()
                 user = user_team.user
 
-                Ticket.objects.filter(user=user).delete()
+                Ticket.objects.filter(writer=user).delete()
+
+
+class UserInquiryService:
+    def submission_inquiry(self, user, validated_data):
+        cnt = len(UserInquiry.objects.filter(created_user=user, created_at__gte=datetime.now() - timedelta(days=3)))
+        if cnt >= 3:
+            raise ApiValidationError("Multiple submissions have been received within the last three days.")
+
+        validated_data['created_user'] = user
+        UserInquiry.objects.create(**validated_data)
+
+        return validated_data.get('email')

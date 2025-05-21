@@ -3,7 +3,8 @@ name: Deploy to AWS EC2
 on:
   push:
     branches:
-      - main
+      - develop
+      - feature/KBOBACK-132
 
 jobs:
   deploy:
@@ -46,11 +47,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             cd ~/kboBack/backend
-            git pull origin ${{ github.ref_name }}
-            poetry install
-            poetry run python manage.py makemigrations
-            poetry run python manage.py migrate
-            sudo systemctl restart kbo-api
+#            git pull origin ${{ github.ref_name }}
+#            poetry install
+#            poetry run python manage.py makemigrations
+#            poetry run python manage.py migrate
+#            sudo systemctl restart kbo-api
 
       - name: Remove Github Actions IP from security group
         if: always()

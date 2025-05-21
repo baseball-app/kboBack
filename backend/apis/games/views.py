@@ -8,17 +8,20 @@ from rest_framework.viewsets import GenericViewSet
 from apis.games.serializers import GameSerializer
 from apis.games.swagger import SWAGGER_GAMES_LIST
 from apps.games.models import Game
+from base.mixins import SentryLoggingMixin
 
 
 @extend_schema_view(
     list=SWAGGER_GAMES_LIST,
 )
 class GamesViewSet(
+    SentryLoggingMixin,
     ListModelMixin,
     GenericViewSet,
 ):
     permission_classes = [IsAuthenticated]
     serializer_class = GameSerializer
+    pagination_class = None
 
     def get_queryset(self):
         queryset = Game.objects.all()

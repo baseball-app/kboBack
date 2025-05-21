@@ -1,52 +1,18 @@
-version: '3.8'
-
+version: '3'
 services:
-  db:
-    image: postgres:latest
-    container_name: postgres_db
-    environment:
-      POSTGRES_DB: kboback
-      POSTGRES_USER: kboback_user
-      POSTGRES_PASSWORD: kboback_password
-    ports:
-      - "15432:5432"
-    networks:
-      default_bridge:
-        ipv4_address: 172.30.0.100
-
-  api:
-    build: ./backend
-    command: bash -c "      
-      poetry install &&
-      poetry run python manage.py makemigrations &&
-      poetry run python manage.py migrate &&      
-      poetry run python manage.py runscript init_script &&
-      poetry run gunicorn conf.wsgi:application --bind 0.0.0.0:8000"
+  server:
+    build:
+      context: .
+    command: >
+      bash -c "service redis-server start &&
+               python manage.py migrate &&
+               gunicorn --bind 0.0.0.0:8001 conf.wsgi:application &
+               celery -A conf worker --loglevel=info &
+               celery -A conf beat --loglevel=info &
+               wait"
     volumes:
-      - ./backend/:/backend/
-    expose:
-      - 8000
-    environment:
-      - DJANGO_SETTINGS_MODULE=conf.settings.local
-    networks:
-      default_bridge:
-        ipv4_address: 172.30.0.111
-    depends_on:
-      - db
-
-  nginx:
-    build: ./nginx
+      - ./backend/static:/server/static
     ports:
-      - 8000:8000
-    networks:
-      default_bridge:
-        ipv4_address: 172.30.0.123
-    depends_on:
-      - api
-
-networks:
-  default_bridge:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.30.0.0/16
+      - "8001:8001"
+      - "6379:6379"
+    restart: unless-stopped

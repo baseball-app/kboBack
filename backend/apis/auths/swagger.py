@@ -6,6 +6,8 @@ SWAGGER_AUTHS_TAGS = ["auths"]
 BODY_PARAMETER_FOR_TOKEN = inline_serializer(
     name="code",
     fields={
+        "native": serializers.BooleanField(),
+        "id_token": serializers.CharField(),
         "code": serializers.CharField(),
         "state": serializers.CharField(),
     },
@@ -30,6 +32,13 @@ SWAGGER_KAKAO = extend_schema(
     tags=SWAGGER_AUTHS_TAGS,
     summary="카카오 소셜 로그인하여 회원가입/로그인",
     description="카카오 아이디로 로그인하여 회원가입/로그인",
+    request=BODY_PARAMETER_FOR_TOKEN,
+)
+
+SWAGGER_APPLE = extend_schema(
+    tags=SWAGGER_AUTHS_TAGS,
+    summary="애플 소셜 로그인하여 회원가입/로그인",
+    description="애플 아이디로 로그인하여 회원가입/로그인",
     request=BODY_PARAMETER_FOR_TOKEN,
 )
 
