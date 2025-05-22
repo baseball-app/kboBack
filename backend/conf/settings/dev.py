@@ -1,6 +1,6 @@
-from conf.settings.base import *  # noqa: F403
-
 config = toml.load(BASE_DIR / "config_dev.toml")  # noqa: F405
+
+from conf.settings.base import *  # noqa: F403
 
 DEBUG = False
 ALLOWED_HOSTS = ["dev.kboapp.xyz", "kboapp.xyz", "www.kboapp.xyz", "localhost", "127.0.0.1"]
