@@ -1,5 +1,3 @@
-config = toml.load(BASE_DIR / "config_dev.toml")  # noqa: F405
-
 from conf.settings.base import *  # noqa: F403
 
 DEBUG = False
