@@ -47,7 +47,7 @@ jobs:
           script: |
             cd ~/kboBack_dev/backend
             git pull origin ${{ github.ref_name }}
-            docker compose up -d
+            docker compose up -d --build
 
       - name: Remove Github Actions IP from security group
         if: always()
