@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  server:
+    build:
+      context: .
+    command: >
+      bash -c "
+        poetry run python manage.py makemigrations &&
+        poetry run python manage.py migrate &&
+        poetry run python manage.py collectstatic --noinput &&
+        poetry run gunicorn --bind 0.0.0.0:8001 conf.wsgi:application &
+        poetry run celery -A conf worker --loglevel=info &
+        poetry run celery -A conf beat --loglevel=info &
+        wait
+      "
+    volumes:
+      - ./backend/static:/server/static
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+    depends_on:
+      - redis
+    networks:
+      - kboback-dev-network
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "16379:6379"
+    networks:
+      - kboback-dev-network
+
+networks:
+  kboback-dev-network:
