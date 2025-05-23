@@ -10,3 +10,6 @@ DEFAULT_HOST = "https://dev.kboapp.xyz"
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")  # noqa: F405
+
+# Environment
+ENVIRONMENT = "dev"

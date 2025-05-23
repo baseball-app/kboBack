@@ -48,3 +48,4 @@ dsn_url = ""
 
 [discord]
 url = ""
+secret_key_url = ""

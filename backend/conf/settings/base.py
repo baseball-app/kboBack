@@ -240,3 +240,7 @@ sentry_sdk.init(
 
 # Discord Webhook
 DISCORD_WEBHOOK_URL = config["discord"]["url"]
+DISCORD_SECRET_KEY_URL = config["discord"]["secret_key_url"]
+
+# Environment
+ENVIRONMENT = "base"
