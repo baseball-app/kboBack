@@ -7,8 +7,15 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 DEFAULT_HOST = "https://kboapp.xyz"
 
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")  # noqa: F405
+# Sentry 설정
+sentry_sdk.init(
+    dsn=config["sentry"].get("dsn_url", ""),
+    integrations=[
+        DjangoIntegration(),
+    ],
+    traces_sample_rate=1.0,
+    send_default_pii=True
+)
 
 # Environment
 ENVIRONMENT = "prod"
