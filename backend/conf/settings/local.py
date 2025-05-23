@@ -8,3 +8,6 @@ LOGGING["loggers"]["django.db.backends"] = {
     "level": "DEBUG",
     "propagate": False,
 }
+
+# Environment
+ENVIRONMENT = "local"
