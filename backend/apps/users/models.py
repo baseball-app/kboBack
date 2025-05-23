@@ -59,8 +59,15 @@ class Friendship(TimeStampModel):
 
 
 class UserInquiry(CreatedTimeStampModel):
-    email = models.EmailField(blank=True, null=True)
-    title = models.CharField(max_length=100)
-    content = models.CharField(max_length=1000)
+    email = models.EmailField(blank=True, null=True, verbose_name="이메일 주소")
+    title = models.CharField(max_length=100, verbose_name="사용자 문의 제목")
+    content = models.CharField(max_length=1000, verbose_name="사용자 문의 내용")
 
     created_user = models.ForeignKey("User", on_delete=models.DO_NOTHING, null=True, related_name="+", unique=False)
+
+    def __str__(self):
+        return f"[{self.email or '이메일 없음'}] {self.title}"
+
+    class Meta:
+        verbose_name = "사용자 문의"
+        verbose_name_plural = "사용자 문의 목록"

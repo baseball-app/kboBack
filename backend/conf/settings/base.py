@@ -1,10 +1,9 @@
 import os
 from pathlib import Path
 
-import toml
 import sentry_sdk
+import toml
 from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -24,6 +23,7 @@ DJANGO_APPS = [
 ]
 
 PROJECT_APPS = [
+    "apps.admins",
     "apps.users",
     "apps.tickets",
     "apps.games",
