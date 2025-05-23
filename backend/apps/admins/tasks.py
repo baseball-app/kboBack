@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from apps.admins.models import AdminSecretKey
-from conf.settings.base import DISCORD_WEBHOOK_URL
+from conf.settings.base import DISCORD_WEBHOOK_URL, DISCORD_SECRET_KEY_URL
 
 User = get_user_model()
 
@@ -22,7 +22,7 @@ def generate_admin_secret_key():
     }
 
     try:
-        response = requests.post(DISCORD_WEBHOOK_URL, json=message)
+        response = requests.post(DISCORD_SECRET_KEY_URL, json=message)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(f"디스코드 전송 실패: {e}")
