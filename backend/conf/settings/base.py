@@ -170,7 +170,9 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static") # noqa: F405
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -227,16 +229,6 @@ AWS_S3_REGION_NAME = config["aws"].get("AWS_S3_REGION_NAME", "ap-northeast-2")
 AWS_S3_CUSTOM_DOMAIN = config["aws"].get("AWS_S3_CUSTOM_DOMAIN", "")
 
 DEFAULT_HOST = "http://localhost:8000"
-
-# Sentry 설정
-sentry_sdk.init(
-    dsn=config["sentry"].get("dsn_url", ""),
-    integrations=[
-        DjangoIntegration(),
-    ],
-    traces_sample_rate=1.0,
-    send_default_pii=True
-)
 
 # Discord Webhook
 DISCORD_WEBHOOK_URL = config["discord"]["url"]
